@@ -1,5 +1,7 @@
 # Paisa
-Paisa is a private, offline-first personal finance tracker for Flutter. It is designed for people who want a fast daily view of their money without sending financial data to a server.
+Paisa is a private, offline-first personal finance tracker for managing expenses, budgets, accounts, and savings on your device.
+
+Project website: <https://iamtgiri.github.io/paisa/>
 
 ## Product Focus
 
@@ -83,3 +85,4 @@ For security concerns, follow the private reporting guidance in [SECURITY.md](SE
 ## License
 
 This repository does not currently declare an open-source license. Until a license is added, all rights are reserved and reuse should not be assumed.
+
