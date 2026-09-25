@@ -1,7 +1,9 @@
 ---
 name: Feature request
 about: Suggest a focused improvement to Paisa
-labels: enhancement
+title: "[Feature]: "
+labels: [enhancement]
+assignees: []
 ---
 
 ## Problem

@@ -39,11 +39,11 @@ For every published build, increase the build number: `+3` -> `+4`. A build-numb
 5. Review the generated APK and verify the app launches on a supported test device.
 6. Check that no personal data, local paths, secrets, or generated output is included in the commit.
 7. Create an annotated Git tag matching the semantic version, for example `v1.2.1`.
-8. Create a GitHub release from that tag and attach the release artifact when appropriate.
+8. Push the tag. GitHub Actions will validate the tag, build the release APK, and create the GitHub release automatically.
 
 ## GitHub Release Notes
 
-Release notes should summarize user-visible changes, compatibility requirements, data migration concerns, and known limitations. Link to the matching changelog entry rather than duplicating every implementation detail.
+Release notes should summarize user-visible changes, compatibility requirements, data migration concerns, and known limitations. The tagged release workflow generates the initial notes and attaches the APK; review them before publishing the release publicly. Link to the matching changelog entry rather than duplicating every implementation detail.
 
 ## Data and Migration Discipline
 

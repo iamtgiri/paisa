@@ -4,6 +4,17 @@ All notable changes to Paisa are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.2.1+5] - 2026-09-25
+
+### Added
+
+- Complete GitHub issue, pull request, dependency update, validation, and tagged Android release automation.
+- Android API 36 provisioning in CI to match the release build configuration.
+
+### Changed
+
+- GitHub issue templates now require clearer titles, labels, and ownership fields.
+
 ## [1.2.1+4] - 2026-09-25
 
 ### Added

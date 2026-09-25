@@ -1,7 +1,9 @@
 ---
 name: Bug report
 about: Report a reproducible problem in Paisa
-labels: bug
+title: "[Bug]: "
+labels: [bug]
+assignees: []
 ---
 
 ## Summary
