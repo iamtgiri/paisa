@@ -32,7 +32,7 @@ dependencies:
   csv: ^6.0.0
 
   # File import
-  file_picker: ^8.0.0
+  file_picker: ^11.0.3
 
   # Local notifications
   flutter_local_notifications: ^17.2.2
