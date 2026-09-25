@@ -4,7 +4,7 @@ All notable changes to Paisa are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
-## [1.2.2+10] - Unreleased
+## [1.2.2+11] - Unreleased
 
 ### Fixed
 
@@ -16,6 +16,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - Reworked light-theme surfaces, text, dividers, inputs, cards, navigation, dialogs, and shared widgets to use a coordinated light palette.
 - Kept the existing dark theme palette unchanged.
+- Added independent daily, weekly, and monthly local spending report notifications with previous-period comparisons.
 
 ### Added
 

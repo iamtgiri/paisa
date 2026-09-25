@@ -112,6 +112,54 @@ class AppPrefs {
     await _save();
   }
 
+  bool get dailyReportNotifications =>
+      (_data['daily_report_notifications'] as bool?) ?? true;
+
+  Future<void> setDailyReportNotifications(bool value) async {
+    _data['daily_report_notifications'] = value;
+    await _save();
+  }
+
+  bool get weeklyReportNotifications =>
+      (_data['weekly_report_notifications'] as bool?) ?? true;
+
+  Future<void> setWeeklyReportNotifications(bool value) async {
+    _data['weekly_report_notifications'] = value;
+    await _save();
+  }
+
+  bool get monthlyReportNotifications =>
+      (_data['monthly_report_notifications'] as bool?) ?? true;
+
+  Future<void> setMonthlyReportNotifications(bool value) async {
+    _data['monthly_report_notifications'] = value;
+    await _save();
+  }
+
+  String? get lastDailyReportPeriod =>
+      _data['last_daily_report_period'] as String?;
+
+  Future<void> setLastDailyReportPeriod(String value) async {
+    _data['last_daily_report_period'] = value;
+    await _save();
+  }
+
+  String? get lastWeeklyReportPeriod =>
+      _data['last_weekly_report_period'] as String?;
+
+  Future<void> setLastWeeklyReportPeriod(String value) async {
+    _data['last_weekly_report_period'] = value;
+    await _save();
+  }
+
+  String? get lastMonthlyReportPeriod =>
+      _data['last_monthly_report_period'] as String?;
+
+  Future<void> setLastMonthlyReportPeriod(String value) async {
+    _data['last_monthly_report_period'] = value;
+    await _save();
+  }
+
   String get currencySymbol => (_data['currency_symbol'] as String?) ?? '₹';
 
   Future<void> setCurrencySymbol(String value) async {

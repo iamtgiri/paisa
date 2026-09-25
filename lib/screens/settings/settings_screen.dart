@@ -121,7 +121,7 @@ class SettingsScreen extends ConsumerWidget {
               context,
               Icons.notifications_outlined,
               'Notifications',
-              'Budget alerts and recurring reminders',
+              'Alerts and spending reports',
               const Color(0xFFFF9800),
               Switch(
                 value: notifEnabled,
@@ -136,6 +136,14 @@ class SettingsScreen extends ConsumerWidget {
                   }
                 },
               ),
+            ),
+            _tile(
+              context,
+              Icons.insights_outlined,
+              'Spending reports',
+              'Daily, weekly and monthly summaries',
+              const Color(0xFF00897B),
+              () => _showNotificationSettingsSheet(context, ref),
             ),
             _tile(
               context,
@@ -285,6 +293,93 @@ class SettingsScreen extends ConsumerWidget {
           style:
               TextStyle(fontSize: 11, color: context.appColors.onSurfaceMuted)),
       trailing: trailing,
+    );
+  }
+
+  Future<void> _showNotificationSettingsSheet(
+      BuildContext context, WidgetRef ref) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) {
+          final prefs = AppPrefs.instance;
+
+          Future<void> update(
+              Future<void> Function(bool) save, bool value) async {
+            await save(value);
+            setSheetState(() {});
+            if (value && prefs.notificationsEnabled) {
+              await NotificationService.instance.init();
+              await NotificationService.instance.checkAndNotify();
+            }
+          }
+
+          return Container(
+            decoration: const BoxDecoration(
+              color: AppTheme.surfaceCard,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            padding: EdgeInsets.fromLTRB(
+                20, 12, 20, 20 + MediaQuery.of(sheetContext).viewInsets.bottom),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: sheetContext.appColors.divider,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text('Spending reports',
+                    style: Theme.of(sheetContext).textTheme.titleLarge),
+                const SizedBox(height: 6),
+                Text(
+                  'Reports are generated locally when the app is opened after a period ends.',
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: sheetContext.appColors.onSurfaceMuted),
+                ),
+                const SizedBox(height: 12),
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Daily report'),
+                  subtitle:
+                      const Text('Yesterday compared with the day before'),
+                  value: prefs.dailyReportNotifications,
+                  onChanged: (value) =>
+                      update(prefs.setDailyReportNotifications, value),
+                ),
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Weekly report'),
+                  subtitle:
+                      const Text('Last week compared with the previous week'),
+                  value: prefs.weeklyReportNotifications,
+                  onChanged: (value) =>
+                      update(prefs.setWeeklyReportNotifications, value),
+                ),
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Monthly report'),
+                  subtitle:
+                      const Text('Last month compared with the previous month'),
+                  value: prefs.monthlyReportNotifications,
+                  onChanged: (value) =>
+                      update(prefs.setMonthlyReportNotifications, value),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 

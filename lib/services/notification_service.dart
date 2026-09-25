@@ -2,7 +2,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../models/app_prefs.dart';
 import '../models/isar_service.dart';
-import '../models/recurring.dart';
+import '../models/transaction.dart';
+import '../utils/app_utils.dart';
 
 /// Wraps flutter_local_notifications.
 /// Call [init] once after DB is ready (in main.dart addPostFrameCallback).
@@ -37,7 +38,122 @@ class NotificationService {
     if (!AppPrefs.instance.notificationsEnabled) return;
     await _checkRecurringDue();
     await _checkBudgetAlerts();
+    await _checkPeriodReports();
   }
+
+  Future<void> _checkPeriodReports() async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final prefs = AppPrefs.instance;
+
+    if (prefs.dailyReportNotifications) {
+      final start = today.subtract(const Duration(days: 1));
+      await _checkReport(
+        id: 4001,
+        title: 'Daily spending report',
+        periodKey: _dateKey(start),
+        lastPeriod: prefs.lastDailyReportPeriod,
+        start: start,
+        end: today,
+        previousStart: start.subtract(const Duration(days: 1)),
+        previousEnd: start,
+        savePeriod: prefs.setLastDailyReportPeriod,
+      );
+    }
+
+    if (prefs.weeklyReportNotifications) {
+      final currentWeekStart = today.subtract(
+        Duration(days: today.weekday - DateTime.monday),
+      );
+      final start = currentWeekStart.subtract(const Duration(days: 7));
+      await _checkReport(
+        id: 4002,
+        title: 'Weekly spending report',
+        periodKey: _dateKey(start),
+        lastPeriod: prefs.lastWeeklyReportPeriod,
+        start: start,
+        end: currentWeekStart,
+        previousStart: start.subtract(const Duration(days: 7)),
+        previousEnd: start,
+        savePeriod: prefs.setLastWeeklyReportPeriod,
+      );
+    }
+
+    if (prefs.monthlyReportNotifications) {
+      final currentMonthStart = DateTime(today.year, today.month);
+      final start = DateTime(today.year, today.month - 1);
+      await _checkReport(
+        id: 4003,
+        title: 'Monthly spending report',
+        periodKey: _dateKey(start),
+        lastPeriod: prefs.lastMonthlyReportPeriod,
+        start: start,
+        end: currentMonthStart,
+        previousStart: DateTime(start.year, start.month - 1),
+        previousEnd: start,
+        savePeriod: prefs.setLastMonthlyReportPeriod,
+      );
+    }
+  }
+
+  Future<void> _checkReport({
+    required int id,
+    required String title,
+    required String periodKey,
+    required String? lastPeriod,
+    required DateTime start,
+    required DateTime end,
+    required DateTime previousStart,
+    required DateTime previousEnd,
+    required Future<void> Function(String) savePeriod,
+  }) async {
+    if (lastPeriod == periodKey) return;
+
+    final current = await _getSummary(start, end);
+    final previous = await _getSummary(previousStart, previousEnd);
+    await _show(
+      id: id,
+      title: title,
+      body: _reportBody(current, previous),
+      channel: _channelId,
+      channelName: _channelName,
+    );
+    await savePeriod(periodKey);
+  }
+
+  Future<({double income, double expense})> _getSummary(
+      DateTime start, DateTime end) async {
+    final transactions = await IsarService.instance.getTransactionsByDateRange(
+      start,
+      end.subtract(const Duration(milliseconds: 1)),
+    );
+    double income = 0;
+    double expense = 0;
+    for (final transaction in transactions) {
+      if (transaction.type == TransactionType.income) {
+        income += transaction.amount;
+      } else {
+        expense += transaction.amount;
+      }
+    }
+    return (income: income, expense: expense);
+  }
+
+  String _reportBody(({double income, double expense}) current,
+      ({double income, double expense}) previous) {
+    final change = current.expense - previous.expense;
+    final comparison = previous.expense == 0
+        ? current.expense == 0
+            ? 'same as previous period'
+            : 'no spending in previous period'
+        : '${change.abs() / previous.expense * 100 >= 1 ? (change.abs() / previous.expense * 100).toStringAsFixed(0) : '<1'}% ${change > 0 ? 'higher' : change < 0 ? 'lower' : 'same'}';
+    return 'Spent ${AppUtils.formatAmount(current.expense, compact: true)} · '
+        '$comparison · income ${AppUtils.formatAmount(current.income, compact: true)}';
+  }
+
+  String _dateKey(DateTime date) => '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
 
   // ─── Recurring due today ──────────────────────────────────────
   Future<void> _checkRecurringDue() async {

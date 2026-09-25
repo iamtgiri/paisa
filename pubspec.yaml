@@ -1,7 +1,7 @@
 name: paisa
 description: Personal offline-first finance tracker — track expenses, budgets, investments & savings.
 publish_to: 'none'
-version: 1.2.2+10
+version: 1.2.2+11
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
