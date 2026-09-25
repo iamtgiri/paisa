@@ -2,6 +2,8 @@
 
 Thank you for helping improve Paisa. Contributions should preserve the project's local-first privacy model and keep financial calculations reliable.
 
+Paisa is distributed under the MIT License. By contributing, you agree that your contributions may be distributed under the same license.
+
 ## Before You Start
 
 - Read the README and the release process in `docs/RELEASE_PROCESS.md`.
