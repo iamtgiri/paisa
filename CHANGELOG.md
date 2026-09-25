@@ -4,6 +4,13 @@ All notable changes to Paisa are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.2.2+7] - Unreleased
+
+### Fixed
+
+- Stabilized Android validation and release automation.
+- Removed redundant workflow branches after integrating their changes into `main`.
+
 ## [1.2.1+6] - 2026-09-25
 
 ### Fixed
