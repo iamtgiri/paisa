@@ -1,7 +1,7 @@
 # Paisa
 Paisa is a private, offline-first personal finance tracker for managing expenses, budgets, accounts, and savings on your device.
 
-Project website: <https://iamtgiri.github.io/paisa/>
+Project website: <https://iamtgiri.github.io/paisa>
 
 ## Product Focus
 
