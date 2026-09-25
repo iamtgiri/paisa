@@ -360,8 +360,8 @@ class SettingsScreen extends ConsumerWidget {
                 SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Weekly report'),
-                  subtitle:
-                      const Text('Last week compared with the previous week'),
+                  subtitle: const Text(
+                      'Sunday night, or the next time you open the app'),
                   value: prefs.weeklyReportNotifications,
                   onChanged: (value) =>
                       update(prefs.setWeeklyReportNotifications, value),
@@ -369,8 +369,8 @@ class SettingsScreen extends ConsumerWidget {
                 SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Monthly report'),
-                  subtitle:
-                      const Text('Last month compared with the previous month'),
+                  subtitle: const Text(
+                      'Last night of the month, or the next app open'),
                   value: prefs.monthlyReportNotifications,
                   onChanged: (value) =>
                       update(prefs.setMonthlyReportNotifications, value),

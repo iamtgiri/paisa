@@ -65,34 +65,53 @@ class NotificationService {
       final currentWeekStart = today.subtract(
         Duration(days: today.weekday - DateTime.monday),
       );
-      final start = currentWeekStart.subtract(const Duration(days: 7));
-      await _checkReport(
-        id: 4002,
-        title: 'Weekly spending report',
-        periodKey: _dateKey(start),
-        lastPeriod: prefs.lastWeeklyReportPeriod,
-        start: start,
-        end: currentWeekStart,
-        previousStart: start.subtract(const Duration(days: 7)),
-        previousEnd: start,
-        savePeriod: prefs.setLastWeeklyReportPeriod,
-      );
+      final isSundayNight = today.weekday == DateTime.sunday && now.hour >= 21;
+      final isMondayCatchUp = today.weekday == DateTime.monday;
+      if (isSundayNight || isMondayCatchUp) {
+        final start = isSundayNight
+            ? currentWeekStart
+            : currentWeekStart.subtract(const Duration(days: 7));
+        final end = isSundayNight
+            ? today.add(const Duration(days: 1))
+            : currentWeekStart;
+        await _checkReport(
+          id: 4002,
+          title: 'Weekly spending report',
+          periodKey: _dateKey(start),
+          lastPeriod: prefs.lastWeeklyReportPeriod,
+          start: start,
+          end: end,
+          previousStart: start.subtract(const Duration(days: 7)),
+          previousEnd: start,
+          savePeriod: prefs.setLastWeeklyReportPeriod,
+        );
+      }
     }
 
     if (prefs.monthlyReportNotifications) {
       final currentMonthStart = DateTime(today.year, today.month);
-      final start = DateTime(today.year, today.month - 1);
-      await _checkReport(
-        id: 4003,
-        title: 'Monthly spending report',
-        periodKey: _dateKey(start),
-        lastPeriod: prefs.lastMonthlyReportPeriod,
-        start: start,
-        end: currentMonthStart,
-        previousStart: DateTime(start.year, start.month - 1),
-        previousEnd: start,
-        savePeriod: prefs.setLastMonthlyReportPeriod,
-      );
+      final tomorrow = today.add(const Duration(days: 1));
+      final isMonthEnd = tomorrow.month != today.month;
+      final isMonthStart = today.day == 1;
+      if ((isMonthEnd && now.hour >= 21) || isMonthStart) {
+        final start = isMonthEnd
+            ? currentMonthStart
+            : DateTime(today.year, today.month - 1);
+        final end = isMonthEnd
+            ? DateTime(today.year, today.month + 1)
+            : currentMonthStart;
+        await _checkReport(
+          id: 4003,
+          title: 'Monthly spending report',
+          periodKey: _dateKey(start),
+          lastPeriod: prefs.lastMonthlyReportPeriod,
+          start: start,
+          end: end,
+          previousStart: DateTime(start.year, start.month - 1),
+          previousEnd: start,
+          savePeriod: prefs.setLastMonthlyReportPeriod,
+        );
+      }
     }
   }
 
