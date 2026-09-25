@@ -73,7 +73,7 @@ class _PinLockScreenState extends State<PinLockScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.surface,
+      backgroundColor: context.appColors.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -89,14 +89,15 @@ class _PinLockScreenState extends State<PinLockScreen>
                   size: 30, color: AppTheme.primary),
             ),
             const SizedBox(height: 20),
-            const Text('Enter PIN',
+            Text('Enter PIN',
                 style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.onSurface)),
+                    color: context.appColors.onSurface)),
             const SizedBox(height: 6),
-            const Text('Unlock Paisa',
-                style: TextStyle(fontSize: 13, color: AppTheme.onSurfaceMuted)),
+            Text('Unlock Paisa',
+                style: TextStyle(
+                    fontSize: 13, color: context.appColors.onSurfaceMuted)),
             const SizedBox(height: 40),
             // Dot indicators
             AnimatedBuilder(
@@ -112,7 +113,7 @@ class _PinLockScreenState extends State<PinLockScreen>
                 children: List.generate(4, (i) {
                   final filled = i < _entered.length;
                   return AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
+                    duration: Duration(milliseconds: 150),
                     margin: const EdgeInsets.symmetric(horizontal: 10),
                     width: 14,
                     height: 14,
@@ -120,9 +121,11 @@ class _PinLockScreenState extends State<PinLockScreen>
                       shape: BoxShape.circle,
                       color: filled
                           ? (_shake ? AppTheme.expense : AppTheme.primary)
-                          : AppTheme.surfaceCard2,
+                          : context.appColors.surfaceCard2,
                       border: Border.all(
-                        color: filled ? Colors.transparent : AppTheme.divider,
+                        color: filled
+                            ? Colors.transparent
+                            : context.appColors.divider,
                         width: 1.5,
                       ),
                     ),
@@ -173,16 +176,16 @@ class _PinLockScreenState extends State<PinLockScreen>
         width: 72,
         height: 72,
         decoration: BoxDecoration(
-          color: AppTheme.surfaceCard,
+          color: context.appColors.surfaceCard,
           shape: BoxShape.circle,
         ),
         child: Center(
           child: Text(
             digit,
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
-                color: AppTheme.onSurface),
+                color: context.appColors.onSurface),
           ),
         ),
       ),
@@ -196,12 +199,12 @@ class _PinLockScreenState extends State<PinLockScreen>
         width: 72,
         height: 72,
         decoration: BoxDecoration(
-          color: AppTheme.surfaceCard,
+          color: context.appColors.surfaceCard,
           shape: BoxShape.circle,
         ),
-        child: const Center(
+        child: Center(
           child: Icon(Icons.backspace_outlined,
-              size: 22, color: AppTheme.onSurfaceMuted),
+              size: 22, color: context.appColors.onSurfaceMuted),
         ),
       ),
     );
@@ -304,7 +307,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
     final displayed = _confirming ? _confirm : _first;
 
     return Scaffold(
-      backgroundColor: AppTheme.surface,
+      backgroundColor: context.appColors.surface,
       appBar: AppBar(
         title: const Text('Set PIN'),
         leading: IconButton(
@@ -340,15 +343,15 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
               duration: const Duration(milliseconds: 200),
               child: Text(label,
                   key: ValueKey(label),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.onSurface)),
+                      color: context.appColors.onSurface)),
             ),
             const SizedBox(height: 6),
             Text(sub,
-                style: const TextStyle(
-                    fontSize: 13, color: AppTheme.onSurfaceMuted)),
+                style: TextStyle(
+                    fontSize: 13, color: context.appColors.onSurfaceMuted)),
             const SizedBox(height: 40),
             AnimatedBuilder(
               animation: _shakeAnim,
@@ -361,7 +364,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
                 children: List.generate(4, (i) {
                   final filled = i < displayed.length;
                   return AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
+                    duration: Duration(milliseconds: 150),
                     margin: const EdgeInsets.symmetric(horizontal: 10),
                     width: 14,
                     height: 14,
@@ -369,9 +372,11 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
                       shape: BoxShape.circle,
                       color: filled
                           ? (_shake ? AppTheme.expense : AppTheme.primary)
-                          : AppTheme.surfaceCard2,
+                          : context.appColors.surfaceCard2,
                       border: Border.all(
-                        color: filled ? Colors.transparent : AppTheme.divider,
+                        color: filled
+                            ? Colors.transparent
+                            : context.appColors.divider,
                         width: 1.5,
                       ),
                     ),
@@ -418,13 +423,13 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
           width: 72,
           height: 72,
           decoration: BoxDecoration(
-              color: AppTheme.surfaceCard, shape: BoxShape.circle),
+              color: context.appColors.surfaceCard, shape: BoxShape.circle),
           child: Center(
             child: Text(digit,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.onSurface)),
+                    color: context.appColors.onSurface)),
           ),
         ),
       );
@@ -435,10 +440,10 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
           width: 72,
           height: 72,
           decoration: BoxDecoration(
-              color: AppTheme.surfaceCard, shape: BoxShape.circle),
-          child: const Center(
+              color: context.appColors.surfaceCard, shape: BoxShape.circle),
+          child: Center(
             child: Icon(Icons.backspace_outlined,
-                size: 22, color: AppTheme.onSurfaceMuted),
+                size: 22, color: context.appColors.onSurfaceMuted),
           ),
         ),
       );

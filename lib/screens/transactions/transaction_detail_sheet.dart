@@ -20,8 +20,8 @@ class TransactionDetailSheet extends ConsumerWidget {
     final accounts = ref.watch(accountsProvider);
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.surfaceCard,
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
@@ -33,7 +33,7 @@ class TransactionDetailSheet extends ConsumerWidget {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: AppTheme.divider,
+                color: context.appColors.divider,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -142,10 +142,10 @@ class TransactionDetailSheet extends ConsumerWidget {
                     child: OutlinedButton.icon(
                       onPressed: () => _duplicateTransaction(context, ref),
                       icon: const Icon(Icons.copy_outlined, size: 16),
-                      label: const Text('Duplicate Transaction'),
+                      label: Text('Duplicate Transaction'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.onSurfaceMuted,
-                        side: const BorderSide(color: AppTheme.divider),
+                        foregroundColor: context.appColors.onSurfaceMuted,
+                        side: BorderSide(color: context.appColors.divider),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
@@ -168,17 +168,17 @@ class TransactionDetailSheet extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 9),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: AppTheme.onSurfaceMuted),
+          Icon(icon, size: 16, color: context.appColors.onSurfaceMuted),
           const SizedBox(width: 12),
           Text(label,
-              style: const TextStyle(
-                  color: AppTheme.onSurfaceMuted, fontSize: 13)),
-          const Spacer(),
+              style: TextStyle(
+                  color: context.appColors.onSurfaceMuted, fontSize: 13)),
+          Spacer(),
           Flexible(
             child: Text(
               value,
               style: TextStyle(
-                color: valueColor ?? AppTheme.onSurface,
+                color: valueColor ?? context.appColors.onSurface,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),

@@ -1,6 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+class AppThemeColors extends ThemeExtension<AppThemeColors> {
+  final Color surface;
+  final Color surfaceCard;
+  final Color surfaceCard2;
+  final Color onSurface;
+  final Color onSurfaceMuted;
+  final Color divider;
+
+  const AppThemeColors({
+    required this.surface,
+    required this.surfaceCard,
+    required this.surfaceCard2,
+    required this.onSurface,
+    required this.onSurfaceMuted,
+    required this.divider,
+  });
+
+  @override
+  AppThemeColors copyWith({
+    Color? surface,
+    Color? surfaceCard,
+    Color? surfaceCard2,
+    Color? onSurface,
+    Color? onSurfaceMuted,
+    Color? divider,
+  }) {
+    return AppThemeColors(
+      surface: surface ?? this.surface,
+      surfaceCard: surfaceCard ?? this.surfaceCard,
+      surfaceCard2: surfaceCard2 ?? this.surfaceCard2,
+      onSurface: onSurface ?? this.onSurface,
+      onSurfaceMuted: onSurfaceMuted ?? this.onSurfaceMuted,
+      divider: divider ?? this.divider,
+    );
+  }
+
+  @override
+  AppThemeColors lerp(covariant AppThemeColors? other, double t) {
+    if (other == null) return this;
+    return AppThemeColors(
+      surface: Color.lerp(surface, other.surface, t)!,
+      surfaceCard: Color.lerp(surfaceCard, other.surfaceCard, t)!,
+      surfaceCard2: Color.lerp(surfaceCard2, other.surfaceCard2, t)!,
+      onSurface: Color.lerp(onSurface, other.onSurface, t)!,
+      onSurfaceMuted: Color.lerp(onSurfaceMuted, other.onSurfaceMuted, t)!,
+      divider: Color.lerp(divider, other.divider, t)!,
+    );
+  }
+}
+
+extension AppThemeContext on BuildContext {
+  AppThemeColors get appColors => Theme.of(this).extension<AppThemeColors>()!;
+}
+
 class AppTheme {
   // Brand colors
   static const Color primary = Color(0xFF00BFA5); // teal accent
@@ -29,6 +83,16 @@ class AppTheme {
         outline: divider,
       ),
       scaffoldBackgroundColor: surface,
+      extensions: const [
+        AppThemeColors(
+          surface: surface,
+          surfaceCard: surfaceCard,
+          surfaceCard2: surfaceCard2,
+          onSurface: onSurface,
+          onSurfaceMuted: onSurfaceMuted,
+          divider: divider,
+        ),
+      ],
       textTheme: GoogleFonts.dmSansTextTheme(
         ThemeData.dark().textTheme,
       ).copyWith(
@@ -212,6 +276,16 @@ class AppTheme {
         outline: lDivider,
       ),
       scaffoldBackgroundColor: lSurface,
+      extensions: const [
+        AppThemeColors(
+          surface: lSurface,
+          surfaceCard: lCard,
+          surfaceCard2: lCard2,
+          onSurface: lOnSurface,
+          onSurfaceMuted: lOnSurfaceMuted,
+          divider: lDivider,
+        ),
+      ],
       textTheme: GoogleFonts.dmSansTextTheme(
         ThemeData.light().textTheme,
       ).copyWith(

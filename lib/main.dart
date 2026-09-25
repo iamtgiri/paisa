@@ -116,7 +116,7 @@ class _AppShellState extends ConsumerState<_AppShell> {
   Widget build(BuildContext context) {
     if (_error != null) {
       return Scaffold(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: context.appColors.surface,
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
@@ -126,12 +126,13 @@ class _AppShellState extends ConsumerState<_AppShell> {
                 const Icon(Icons.error_outline,
                     size: 48, color: AppTheme.expense),
                 const SizedBox(height: 16),
-                const Text('Failed to initialize',
-                    style: TextStyle(fontSize: 18, color: AppTheme.onSurface)),
+                Text('Failed to initialize',
+                    style: TextStyle(
+                        fontSize: 18, color: context.appColors.onSurface)),
                 const SizedBox(height: 8),
                 Text(_error!,
-                    style: const TextStyle(
-                        fontSize: 12, color: AppTheme.onSurfaceMuted),
+                    style: TextStyle(
+                        fontSize: 12, color: context.appColors.onSurfaceMuted),
                     textAlign: TextAlign.center),
               ],
             ),
@@ -156,8 +157,8 @@ class _AppShellState extends ConsumerState<_AppShell> {
         children: _pages,
       ),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: AppTheme.divider)),
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: context.appColors.divider)),
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
@@ -204,7 +205,7 @@ class _SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.surface,
+      backgroundColor: context.appColors.surface,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -220,15 +221,16 @@ class _SplashScreen extends StatelessWidget {
                   size: 40, color: AppTheme.primary),
             ),
             const SizedBox(height: 24),
-            const Text('Paisa',
+            Text('Paisa',
                 style: TextStyle(
                     fontSize: 36,
                     fontWeight: FontWeight.w800,
-                    color: AppTheme.onSurface,
+                    color: context.appColors.onSurface,
                     letterSpacing: -1)),
             const SizedBox(height: 6),
-            const Text('Your personal finance tracker',
-                style: TextStyle(fontSize: 13, color: AppTheme.onSurfaceMuted)),
+            Text('Your personal finance tracker',
+                style: TextStyle(
+                    fontSize: 13, color: context.appColors.onSurfaceMuted)),
             const SizedBox(height: 40),
             const SizedBox(
               width: 22,

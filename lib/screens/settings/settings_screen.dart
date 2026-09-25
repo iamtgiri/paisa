@@ -181,24 +181,24 @@ class SettingsScreen extends ConsumerWidget {
                 Icons.restore_outlined,
                 'Import JSON Backup',
                 'Restore from a previous backup',
-                const Color(0xFFFF6B6B),
+                Color(0xFFFF6B6B),
                 () => _importJson(context, ref)),
             _tile(
                 context,
                 Icons.category_outlined,
                 'Add Missing Categories',
                 'Add newly available default categories',
-                AppTheme.onSurfaceMuted,
+                context.appColors.onSurfaceMuted,
                 () => _reseedCategories(context, ref)),
           ]),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           _section(context, 'INFO', [
             _tile(
                 context,
                 Icons.info_outline,
                 'About Paisa',
                 'Version 1.2.0 — Personal finance tracker',
-                AppTheme.onSurfaceMuted,
+                context.appColors.onSurfaceMuted,
                 () => _showAbout(context)),
           ]),
           const SizedBox(height: 32),
@@ -214,15 +214,15 @@ class SettingsScreen extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Text(title,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.onSurfaceMuted,
+                  color: context.appColors.onSurfaceMuted,
                   letterSpacing: 0.8)),
         ),
         Container(
           decoration: BoxDecoration(
-            color: AppTheme.surfaceCard,
+            color: context.appColors.surfaceCard,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -258,9 +258,10 @@ class SettingsScreen extends ConsumerWidget {
       title: Text(title,
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
       subtitle: Text(subtitle,
-          style: const TextStyle(fontSize: 11, color: AppTheme.onSurfaceMuted)),
-      trailing: const Icon(Icons.chevron_right,
-          size: 18, color: AppTheme.onSurfaceMuted),
+          style:
+              TextStyle(fontSize: 11, color: context.appColors.onSurfaceMuted)),
+      trailing: Icon(Icons.chevron_right,
+          size: 18, color: context.appColors.onSurfaceMuted),
       onTap: onTap,
     );
   }
@@ -281,7 +282,8 @@ class SettingsScreen extends ConsumerWidget {
       title: Text(title,
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
       subtitle: Text(subtitle,
-          style: const TextStyle(fontSize: 11, color: AppTheme.onSurfaceMuted)),
+          style:
+              TextStyle(fontSize: 11, color: context.appColors.onSurfaceMuted)),
       trailing: trailing,
     );
   }
@@ -302,8 +304,8 @@ class SettingsScreen extends ConsumerWidget {
       backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => Container(
-          decoration: const BoxDecoration(
-            color: AppTheme.surfaceCard,
+          decoration: BoxDecoration(
+            color: context.appColors.surfaceCard,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           padding: EdgeInsets.fromLTRB(
@@ -317,7 +319,7 @@ class SettingsScreen extends ConsumerWidget {
                   width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppTheme.divider,
+                    color: context.appColors.divider,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -326,11 +328,11 @@ class SettingsScreen extends ConsumerWidget {
               Text('Currency & formatting',
                   style: Theme.of(ctx).textTheme.titleLarge),
               const SizedBox(height: 16),
-              const Text('SYMBOL',
+              Text('SYMBOL',
                   style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.onSurfaceMuted,
+                      color: context.appColors.onSurfaceMuted,
                       letterSpacing: 0.8)),
               const SizedBox(height: 8),
               Wrap(
@@ -712,8 +714,8 @@ class SettingsScreen extends ConsumerWidget {
         final kb = MediaQuery.of(ctx).viewInsets.bottom;
         return StatefulBuilder(builder: (ctx2, setState) {
           return Container(
-            decoration: const BoxDecoration(
-              color: AppTheme.surfaceCard,
+            decoration: BoxDecoration(
+              color: context.appColors.surfaceCard,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + kb),
@@ -726,7 +728,7 @@ class SettingsScreen extends ConsumerWidget {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                        color: AppTheme.divider,
+                        color: context.appColors.divider,
                         borderRadius: BorderRadius.circular(2)),
                   ),
                 ),
@@ -734,10 +736,10 @@ class SettingsScreen extends ConsumerWidget {
                 Text('Monthly Spending Limit',
                     style: Theme.of(ctx2).textTheme.titleLarge),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                     'Get a warning on the Insights tab when you approach or exceed this amount.',
                     style: TextStyle(
-                        fontSize: 12, color: AppTheme.onSurfaceMuted)),
+                        fontSize: 12, color: context.appColors.onSurfaceMuted)),
                 const SizedBox(height: 20),
                 TextField(
                   controller: ctrl,
@@ -879,8 +881,9 @@ class SettingsScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Version 1.2.0',
-                style: TextStyle(fontSize: 12, color: AppTheme.onSurfaceMuted)),
+            Text('Version 1.2.0',
+                style: TextStyle(
+                    fontSize: 12, color: context.appColors.onSurfaceMuted)),
             const SizedBox(height: 16),
             const Text(
               'A personal, offline-first finance tracker built for real life — '
@@ -888,27 +891,29 @@ class SettingsScreen extends ConsumerWidget {
               style: TextStyle(fontSize: 13, height: 1.5),
             ),
             const SizedBox(height: 16),
-            const Divider(height: 1, color: AppTheme.divider),
+            Divider(height: 1, color: context.appColors.divider),
             const SizedBox(height: 16),
-            const Text('Built with',
+            Text('Built with',
                 style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.onSurfaceMuted,
+                    color: context.appColors.onSurfaceMuted,
                     letterSpacing: 0.8)),
             const SizedBox(height: 8),
-            _aboutChip('Flutter & Dart'),
+            _aboutChip(context, 'Flutter & Dart'),
             const SizedBox(height: 4),
-            _aboutChip('Isar Database'),
+            _aboutChip(context, 'Isar Database'),
             const SizedBox(height: 4),
-            _aboutChip('Riverpod · fl_chart · Google Fonts'),
+            _aboutChip(context, 'Riverpod · fl_chart · Google Fonts'),
             const SizedBox(height: 16),
-            const Divider(height: 1, color: AppTheme.divider),
+            Divider(height: 1, color: context.appColors.divider),
             const SizedBox(height: 16),
             RichText(
-              text: const TextSpan(
+              text: TextSpan(
                 style: TextStyle(
-                    fontSize: 12, color: AppTheme.onSurfaceMuted, height: 1.6),
+                    fontSize: 12,
+                    color: context.appColors.onSurfaceMuted,
+                    height: 1.6),
                 children: [
                   TextSpan(text: 'Designed & assembled by '),
                   TextSpan(
@@ -936,17 +941,17 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _aboutChip(String label) {
+  Widget _aboutChip(BuildContext context, String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard2,
+        color: context.appColors.surfaceCard2,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(label,
-          style: const TextStyle(
+          style: TextStyle(
               fontSize: 11,
-              color: AppTheme.onSurface,
+              color: context.appColors.onSurface,
               fontWeight: FontWeight.w500)),
     );
   }
@@ -1057,7 +1062,7 @@ class _BudgetCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -1072,21 +1077,22 @@ class _BudgetCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(b.categoryName,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: AppTheme.onSurface)),
+                            color: context.appColors.onSurface)),
                     Text(
                         'Budget: ${AppUtils.formatAmount(b.limitAmount, compact: true)}',
-                        style: const TextStyle(
-                            fontSize: 11, color: AppTheme.onSurfaceMuted)),
+                        style: TextStyle(
+                            fontSize: 11,
+                            color: context.appColors.onSurfaceMuted)),
                   ],
                 ),
               ),
               IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 16),
+                  icon: Icon(Icons.edit_outlined, size: 16),
                   onPressed: onEdit,
-                  color: AppTheme.onSurfaceMuted),
+                  color: context.appColors.onSurfaceMuted),
               IconButton(
                   icon: const Icon(Icons.delete_outline, size: 16),
                   onPressed: onDelete,
@@ -1147,8 +1153,8 @@ class _BudgetFormSheetState extends ConsumerState<_BudgetFormSheet> {
     final catsAsync = ref.watch(expenseCategoriesProvider);
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.surfaceCard,
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + kb),
@@ -1161,7 +1167,7 @@ class _BudgetFormSheetState extends ConsumerState<_BudgetFormSheet> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                  color: AppTheme.divider,
+                  color: context.appColors.divider,
                   borderRadius: BorderRadius.circular(2)),
             ),
           ),
@@ -1170,11 +1176,11 @@ class _BudgetFormSheetState extends ConsumerState<_BudgetFormSheet> {
               style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 20),
           // Category picker
-          const Text('CATEGORY',
+          Text('CATEGORY',
               style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.onSurfaceMuted,
+                  color: context.appColors.onSurfaceMuted,
                   letterSpacing: 0.8)),
           const SizedBox(height: 8),
           catsAsync.when(
@@ -1196,11 +1202,11 @@ class _BudgetFormSheetState extends ConsumerState<_BudgetFormSheet> {
           ),
           const SizedBox(height: 16),
           // Amount
-          const Text('MONTHLY LIMIT (₹)',
+          Text('MONTHLY LIMIT (₹)',
               style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.onSurfaceMuted,
+                  color: context.appColors.onSurfaceMuted,
                   letterSpacing: 0.8)),
           const SizedBox(height: 8),
           TextField(
@@ -1388,7 +1394,7 @@ class _GoalCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.circular(16),
         border: g.isCompleted
             ? Border.all(color: AppTheme.income.withOpacity(0.4))
@@ -1418,10 +1424,10 @@ class _GoalCard extends StatelessWidget {
                       children: [
                         Flexible(
                           child: Text(g.name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: AppTheme.onSurface),
+                                  color: context.appColors.onSurface),
                               overflow: TextOverflow.ellipsis),
                         ),
                         if (g.isCompleted) ...[
@@ -1444,15 +1450,16 @@ class _GoalCard extends StatelessWidget {
                     ),
                     if (g.deadline != null)
                       Text('By ${DateFormat('d MMM y').format(g.deadline!)}',
-                          style: const TextStyle(
-                              fontSize: 11, color: AppTheme.onSurfaceMuted)),
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: context.appColors.onSurfaceMuted)),
                   ],
                 ),
               ),
               IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 16),
+                  icon: Icon(Icons.edit_outlined, size: 16),
                   onPressed: onEdit,
-                  color: AppTheme.onSurfaceMuted),
+                  color: context.appColors.onSurfaceMuted),
               IconButton(
                   icon: const Icon(Icons.delete_outline, size: 16),
                   onPressed: onDelete,
@@ -1470,17 +1477,17 @@ class _GoalCard extends StatelessWidget {
               ),
               Text(
                 'of ${AppUtils.formatAmount(g.targetAmount, compact: true)}',
-                style: const TextStyle(
-                    fontSize: 12, color: AppTheme.onSurfaceMuted),
+                style: TextStyle(
+                    fontSize: 12, color: context.appColors.onSurfaceMuted),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(5),
             child: LinearProgressIndicator(
               value: g.progress,
-              backgroundColor: AppTheme.surfaceCard2,
+              backgroundColor: context.appColors.surfaceCard2,
               valueColor: AlwaysStoppedAnimation<Color>(
                   g.isCompleted ? AppTheme.income : color),
               minHeight: 8,
@@ -1492,8 +1499,8 @@ class _GoalCard extends StatelessWidget {
             children: [
               Text(
                 '${(g.progress * 100).toStringAsFixed(0)}% saved',
-                style: const TextStyle(
-                    fontSize: 11, color: AppTheme.onSurfaceMuted),
+                style: TextStyle(
+                    fontSize: 11, color: context.appColors.onSurfaceMuted),
               ),
               if (!g.isCompleted)
                 TextButton.icon(
@@ -1558,8 +1565,8 @@ class _GoalFormSheetState extends ConsumerState<_GoalFormSheet> {
     final isEdit = widget.existing != null;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.surfaceCard,
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + kb),
@@ -1573,7 +1580,7 @@ class _GoalFormSheetState extends ConsumerState<_GoalFormSheet> {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                    color: AppTheme.divider,
+                    color: context.appColors.divider,
                     borderRadius: BorderRadius.circular(2)),
               ),
             ),
@@ -1631,7 +1638,8 @@ class _GoalFormSheetState extends ConsumerState<_GoalFormSheet> {
                       color: Color(c.$2),
                       shape: BoxShape.circle,
                       border: sel
-                          ? Border.all(color: AppTheme.onSurface, width: 2.5)
+                          ? Border.all(
+                              color: context.appColors.onSurface, width: 2.5)
                           : null,
                     ),
                     child: sel
@@ -1653,13 +1661,13 @@ class _GoalFormSheetState extends ConsumerState<_GoalFormSheet> {
                 return GestureDetector(
                   onTap: () => setState(() => _selectedIcon = ic.$2),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
+                    duration: Duration(milliseconds: 150),
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
                       color: sel
                           ? Color(_selectedColor).withOpacity(0.15)
-                          : AppTheme.surfaceCard2,
+                          : context.appColors.surfaceCard2,
                       borderRadius: BorderRadius.circular(10),
                       border: sel
                           ? Border.all(color: Color(_selectedColor), width: 1.5)
@@ -1669,12 +1677,12 @@ class _GoalFormSheetState extends ConsumerState<_GoalFormSheet> {
                         size: 18,
                         color: sel
                             ? Color(_selectedColor)
-                            : AppTheme.onSurfaceMuted),
+                            : context.appColors.onSurfaceMuted),
                   ),
                 );
               }).toList(),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             // Deadline
             GestureDetector(
               onTap: _pickDeadline,
@@ -1682,14 +1690,14 @@ class _GoalFormSheetState extends ConsumerState<_GoalFormSheet> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceCard2,
+                  color: context.appColors.surfaceCard2,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.divider),
+                  border: Border.all(color: context.appColors.divider),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.event_outlined,
-                        size: 16, color: AppTheme.onSurfaceMuted),
+                    Icon(Icons.event_outlined,
+                        size: 16, color: context.appColors.onSurfaceMuted),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -1699,15 +1707,15 @@ class _GoalFormSheetState extends ConsumerState<_GoalFormSheet> {
                         style: TextStyle(
                             fontSize: 13,
                             color: _deadline == null
-                                ? AppTheme.onSurfaceMuted
-                                : AppTheme.onSurface),
+                                ? context.appColors.onSurfaceMuted
+                                : context.appColors.onSurface),
                       ),
                     ),
                     if (_deadline != null)
                       GestureDetector(
                         onTap: () => setState(() => _deadline = null),
-                        child: const Icon(Icons.close,
-                            size: 16, color: AppTheme.onSurfaceMuted),
+                        child: Icon(Icons.close,
+                            size: 16, color: context.appColors.onSurfaceMuted),
                       ),
                   ],
                 ),
@@ -1731,10 +1739,10 @@ class _GoalFormSheetState extends ConsumerState<_GoalFormSheet> {
   }
 
   Widget _label(String text) => Text(text,
-      style: const TextStyle(
+      style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
-          color: AppTheme.onSurfaceMuted,
+          color: context.appColors.onSurfaceMuted,
           letterSpacing: 0.8));
 
   Future<void> _pickDeadline() async {
@@ -1915,7 +1923,7 @@ class _RecurringTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceCard,
+          color: context.appColors.surfaceCard,
           borderRadius: BorderRadius.circular(14),
           border: isDue && r.isActive
               ? Border.all(color: AppTheme.primary.withOpacity(0.4))
@@ -1931,17 +1939,18 @@ class _RecurringTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(r.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: AppTheme.onSurface),
+                          color: context.appColors.onSurface),
                       overflow: TextOverflow.ellipsis),
                   Row(
                     children: [
                       Text(
                         '${AppUtils.formatAmount(r.amount, compact: true)} · ${_freqLabel(r.frequency)}',
-                        style: const TextStyle(
-                            fontSize: 11, color: AppTheme.onSurfaceMuted),
+                        style: TextStyle(
+                            fontSize: 11,
+                            color: context.appColors.onSurfaceMuted),
                       ),
                     ],
                   ),
@@ -1951,7 +1960,9 @@ class _RecurringTile extends StatelessWidget {
                         : 'Next: ${AppUtils.formatDate(r.nextDueDate)}',
                     style: TextStyle(
                       fontSize: 11,
-                      color: isDue ? AppTheme.primary : AppTheme.onSurfaceMuted,
+                      color: isDue
+                          ? AppTheme.primary
+                          : context.appColors.onSurfaceMuted,
                       fontWeight: isDue ? FontWeight.w600 : FontWeight.normal,
                     ),
                   ),
@@ -2064,8 +2075,8 @@ class _RecurringFormSheetState extends ConsumerState<_RecurringFormSheet> {
         : ref.watch(incomeCategoriesProvider);
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.surfaceCard,
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + kb),
@@ -2079,7 +2090,7 @@ class _RecurringFormSheetState extends ConsumerState<_RecurringFormSheet> {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                    color: AppTheme.divider,
+                    color: context.appColors.divider,
                     borderRadius: BorderRadius.circular(2)),
               ),
             ),
@@ -2156,7 +2167,7 @@ class _RecurringFormSheetState extends ConsumerState<_RecurringFormSheet> {
                         labelStyle: TextStyle(
                           color: _freq == f
                               ? AppTheme.primary
-                              : AppTheme.onSurfaceMuted,
+                              : context.appColors.onSurfaceMuted,
                           fontWeight:
                               _freq == f ? FontWeight.w700 : FontWeight.normal,
                           fontSize: 12,
@@ -2182,10 +2193,10 @@ class _RecurringFormSheetState extends ConsumerState<_RecurringFormSheet> {
   }
 
   Widget _label(String text) => Text(text,
-      style: const TextStyle(
+      style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
-          color: AppTheme.onSurfaceMuted,
+          color: context.appColors.onSurfaceMuted,
           letterSpacing: 0.8));
 
   Widget _typeBtn(bool isExp, String label, Color color) {
@@ -2199,10 +2210,10 @@ class _RecurringFormSheetState extends ConsumerState<_RecurringFormSheet> {
         _loadCats();
       },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: sel ? color.withOpacity(0.12) : AppTheme.surfaceCard2,
+          color: sel ? color.withOpacity(0.12) : context.appColors.surfaceCard2,
           borderRadius: BorderRadius.circular(12),
           border:
               Border.all(color: sel ? color : Colors.transparent, width: 1.5),
@@ -2211,7 +2222,7 @@ class _RecurringFormSheetState extends ConsumerState<_RecurringFormSheet> {
           child: Text(label,
               style: TextStyle(
                   fontSize: 13,
-                  color: sel ? color : AppTheme.onSurfaceMuted,
+                  color: sel ? color : context.appColors.onSurfaceMuted,
                   fontWeight: sel ? FontWeight.w700 : FontWeight.normal)),
         ),
       ),
@@ -2272,7 +2283,7 @@ class _ThemeToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard2,
+        color: context.appColors.surfaceCard2,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -2307,14 +2318,17 @@ class _ThemeToggle extends StatelessWidget {
           children: [
             Icon(icon,
                 size: 13,
-                color: selected ? AppTheme.primary : AppTheme.onSurfaceMuted),
-            const SizedBox(width: 4),
+                color: selected
+                    ? AppTheme.primary
+                    : context.appColors.onSurfaceMuted),
+            SizedBox(width: 4),
             Text(label,
                 style: TextStyle(
                     fontSize: 11,
                     fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
-                    color:
-                        selected ? AppTheme.primary : AppTheme.onSurfaceMuted)),
+                    color: selected
+                        ? AppTheme.primary
+                        : context.appColors.onSurfaceMuted)),
           ],
         ),
       ),

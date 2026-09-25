@@ -63,7 +63,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
             Tab(text: 'Income'),
           ],
           labelColor: AppTheme.primary,
-          unselectedLabelColor: AppTheme.onSurfaceMuted,
+          unselectedLabelColor: context.appColors.onSurfaceMuted,
           indicatorColor: AppTheme.primary,
           indicatorSize: TabBarIndicatorSize.label,
         ),
@@ -220,7 +220,7 @@ class _CategoryTile extends StatelessWidget {
       opacity: cat.enabled ? 1 : 0.55,
       child: Container(
         decoration: BoxDecoration(
-          color: AppTheme.surfaceCard,
+          color: context.appColors.surfaceCard,
           borderRadius: BorderRadius.circular(14),
         ),
         child: ListTile(
@@ -234,16 +234,16 @@ class _CategoryTile extends StatelessWidget {
           subtitle: Row(
             children: [
               if (cat.isDefault)
-                const Text('Default',
+                Text('Default',
                     style: TextStyle(
-                        fontSize: 11, color: AppTheme.onSurfaceMuted)),
+                        fontSize: 11, color: context.appColors.onSurfaceMuted)),
               if (cat.isDefault && !cat.enabled)
-                const Text(' · ',
-                    style: TextStyle(color: AppTheme.onSurfaceMuted)),
+                Text(' · ',
+                    style: TextStyle(color: context.appColors.onSurfaceMuted)),
               if (!cat.enabled)
-                const Text('Disabled',
+                Text('Disabled',
                     style: TextStyle(
-                        fontSize: 11, color: AppTheme.onSurfaceMuted)),
+                        fontSize: 11, color: context.appColors.onSurfaceMuted)),
             ],
           ),
           trailing: Row(
@@ -251,9 +251,9 @@ class _CategoryTile extends StatelessWidget {
             children: [
               if (onEdit != null)
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  icon: Icon(Icons.edit_outlined, size: 18),
                   onPressed: onEdit,
-                  color: AppTheme.onSurfaceMuted,
+                  color: context.appColors.onSurfaceMuted,
                 ),
               if (onDelete != null)
                 IconButton(
@@ -317,8 +317,8 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
     final kb = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.surfaceCard,
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + kb),
@@ -332,7 +332,7 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                    color: AppTheme.divider,
+                    color: context.appColors.divider,
                     borderRadius: BorderRadius.circular(2)),
               ),
             ),
@@ -398,7 +398,8 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
                       color: Color(c.$2),
                       shape: BoxShape.circle,
                       border: selected
-                          ? Border.all(color: AppTheme.onSurface, width: 2.5)
+                          ? Border.all(
+                              color: context.appColors.onSurface, width: 2.5)
                           : null,
                     ),
                     child: selected
@@ -420,13 +421,13 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
                 return GestureDetector(
                   onTap: () => setState(() => _selectedIcon = ic.$2),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
+                    duration: Duration(milliseconds: 150),
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
                       color: selected
                           ? Color(_selectedColor).withOpacity(0.15)
-                          : AppTheme.surfaceCard2,
+                          : context.appColors.surfaceCard2,
                       borderRadius: BorderRadius.circular(10),
                       border: selected
                           ? Border.all(color: Color(_selectedColor), width: 1.5)
@@ -437,7 +438,7 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
                       size: 20,
                       color: selected
                           ? Color(_selectedColor)
-                          : AppTheme.onSurfaceMuted,
+                          : context.appColors.onSurfaceMuted,
                     ),
                   ),
                 );
@@ -465,10 +466,10 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
     return GestureDetector(
       onTap: () => setState(() => _isExpense = isExpense),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: sel ? color.withOpacity(0.12) : AppTheme.surfaceCard2,
+          color: sel ? color.withOpacity(0.12) : context.appColors.surfaceCard2,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: sel ? color : Colors.transparent,
@@ -478,12 +479,14 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 14, color: sel ? color : AppTheme.onSurfaceMuted),
-            const SizedBox(width: 6),
+            Icon(icon,
+                size: 14,
+                color: sel ? color : context.appColors.onSurfaceMuted),
+            SizedBox(width: 6),
             Text(label,
                 style: TextStyle(
                     fontSize: 13,
-                    color: sel ? color : AppTheme.onSurfaceMuted,
+                    color: sel ? color : context.appColors.onSurfaceMuted,
                     fontWeight: sel ? FontWeight.w700 : FontWeight.normal)),
           ],
         ),
@@ -493,10 +496,10 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
 
   Widget _buildSectionLabel(String text) {
     return Text(text,
-        style: const TextStyle(
+        style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: AppTheme.onSurfaceMuted,
+            color: context.appColors.onSurfaceMuted,
             letterSpacing: 0.8));
   }
 

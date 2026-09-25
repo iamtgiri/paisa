@@ -65,8 +65,8 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen>
                         sm.next(),
                 child: Icon(Icons.chevron_right,
                     color: sm.isCurrentMonth
-                        ? AppTheme.onSurfaceMuted
-                        : AppTheme.onSurface),
+                        ? context.appColors.onSurfaceMuted
+                        : context.appColors.onSurface),
               ),
             ],
           ),
@@ -84,7 +84,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen>
             Tab(text: 'Top Spends'),
           ],
           labelColor: AppTheme.primary,
-          unselectedLabelColor: AppTheme.onSurfaceMuted,
+          unselectedLabelColor: context.appColors.onSurfaceMuted,
           indicatorColor: AppTheme.primary,
           indicatorSize: TabBarIndicatorSize.label,
           labelStyle:
@@ -146,16 +146,16 @@ class _BreakdownTabState extends ConsumerState<_BreakdownTab>
         Container(
           margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceCard2,
+            color: context.appColors.surfaceCard2,
             borderRadius: BorderRadius.circular(12),
           ),
           child: TabBar(
             controller: _typeCtrl,
             tabs: const [Tab(text: 'Expenses'), Tab(text: 'Income')],
-            labelColor: AppTheme.onSurface,
-            unselectedLabelColor: AppTheme.onSurfaceMuted,
+            labelColor: context.appColors.onSurface,
+            unselectedLabelColor: context.appColors.onSurfaceMuted,
             indicator: BoxDecoration(
-              color: AppTheme.surfaceCard,
+              color: context.appColors.surfaceCard,
               borderRadius: BorderRadius.circular(10),
             ),
             indicatorSize: TabBarIndicatorSize.tab,
@@ -272,17 +272,17 @@ class _BreakdownTabState extends ConsumerState<_BreakdownTab>
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceCard,
+            color: context.appColors.surfaceCard,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('By Account',
+              Text('By Account',
                   style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.onSurface)),
+                      color: context.appColors.onSurface)),
               const SizedBox(height: 12),
               ...sorted.map((e) {
                 final pct = total > 0 ? e.amount / total * 100 : 0.0;
@@ -293,8 +293,9 @@ class _BreakdownTabState extends ConsumerState<_BreakdownTab>
                       SizedBox(
                         width: 92,
                         child: Text(e.label,
-                            style: const TextStyle(
-                                fontSize: 12, color: AppTheme.onSurface),
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: context.appColors.onSurface),
                             overflow: TextOverflow.ellipsis),
                       ),
                       Expanded(
@@ -302,7 +303,7 @@ class _BreakdownTabState extends ConsumerState<_BreakdownTab>
                           borderRadius: BorderRadius.circular(3),
                           child: LinearProgressIndicator(
                             value: pct / 100,
-                            backgroundColor: AppTheme.surfaceCard2,
+                            backgroundColor: context.appColors.surfaceCard2,
                             valueColor:
                                 AlwaysStoppedAnimation<Color>(AppTheme.primary),
                             minHeight: 6,
@@ -314,9 +315,9 @@ class _BreakdownTabState extends ConsumerState<_BreakdownTab>
                         width: 36,
                         child: Text(
                           '${pct.toStringAsFixed(0)}%',
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 11,
-                              color: AppTheme.onSurfaceMuted,
+                              color: context.appColors.onSurfaceMuted,
                               fontWeight: FontWeight.w600),
                           textAlign: TextAlign.right,
                         ),
@@ -356,20 +357,20 @@ class _TrendsTab extends ConsumerWidget {
           loading: () => Container(
             height: 220,
             decoration: BoxDecoration(
-              color: AppTheme.surfaceCard,
+              color: context.appColors.surfaceCard,
               borderRadius: BorderRadius.circular(16),
             ),
           ),
           error: (_, __) => const SizedBox.shrink(),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         // Daily bar chart
         dailyAsync.when(
           data: (daily) => _buildDailyChart(context, daily, sm),
           loading: () => Container(
             height: 180,
             decoration: BoxDecoration(
-              color: AppTheme.surfaceCard,
+              color: context.appColors.surfaceCard,
               borderRadius: BorderRadius.circular(16),
             ),
           ),
@@ -388,7 +389,7 @@ class _TrendsTab extends ConsumerWidget {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceCard,
+          color: context.appColors.surfaceCard,
           borderRadius: BorderRadius.circular(16),
         ),
         child: const EmptyState(
@@ -416,23 +417,23 @@ class _TrendsTab extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('6-Month Overview',
+          Text('6-Month Overview',
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.onSurface)),
+                  color: context.appColors.onSurface)),
           const SizedBox(height: 4),
           Row(
             children: [
-              _legendDot(AppTheme.expense, 'Expense'),
+              _legendDot(context, AppTheme.expense, 'Expense'),
               const SizedBox(width: 16),
-              _legendDot(AppTheme.income, 'Income'),
+              _legendDot(context, AppTheme.income, 'Income'),
             ],
           ),
           const SizedBox(height: 16),
@@ -449,8 +450,8 @@ class _TrendsTab extends ConsumerWidget {
                   show: true,
                   drawVerticalLine: false,
                   horizontalInterval: maxY > 0 ? maxY / 4 : 2500,
-                  getDrawingHorizontalLine: (_) =>
-                      const FlLine(color: AppTheme.divider, strokeWidth: 0.5),
+                  getDrawingHorizontalLine: (_) => FlLine(
+                      color: context.appColors.divider, strokeWidth: 0.5),
                 ),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
@@ -475,8 +476,9 @@ class _TrendsTab extends ConsumerWidget {
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(
                             DateFormat('MMM').format(DateTime(t.year, t.month)),
-                            style: const TextStyle(
-                                fontSize: 9, color: AppTheme.onSurfaceMuted),
+                            style: TextStyle(
+                                fontSize: 9,
+                                color: context.appColors.onSurfaceMuted),
                           ),
                         );
                       },
@@ -485,7 +487,7 @@ class _TrendsTab extends ConsumerWidget {
                 ),
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
-                    getTooltipColor: (_) => AppTheme.surfaceCard2,
+                    getTooltipColor: (_) => context.appColors.surfaceCard2,
                     getTooltipItems: (spots) => spots.map((s) {
                       final color =
                           s.barIndex == 0 ? AppTheme.expense : AppTheme.income;
@@ -514,7 +516,7 @@ class _TrendsTab extends ConsumerWidget {
                         radius: 3,
                         color: AppTheme.expense,
                         strokeWidth: 1.5,
-                        strokeColor: AppTheme.surface,
+                        strokeColor: context.appColors.surface,
                       ),
                     ),
                     belowBarData: BarAreaData(
@@ -535,7 +537,7 @@ class _TrendsTab extends ConsumerWidget {
                         radius: 3,
                         color: AppTheme.income,
                         strokeWidth: 1.5,
-                        strokeColor: AppTheme.surface,
+                        strokeColor: context.appColors.surface,
                       ),
                     ),
                     belowBarData: BarAreaData(
@@ -561,10 +563,10 @@ class _TrendsTab extends ConsumerWidget {
                     width: 36,
                     child: Text(
                       DateFormat('MMM').format(DateTime(t.year, t.month)),
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: AppTheme.onSurfaceMuted),
+                          color: context.appColors.onSurfaceMuted),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -605,7 +607,7 @@ class _TrendsTab extends ConsumerWidget {
     );
   }
 
-  Widget _legendDot(Color color, String label) {
+  Widget _legendDot(BuildContext context, Color color, String label) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -615,8 +617,8 @@ class _TrendsTab extends ConsumerWidget {
             decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
         const SizedBox(width: 4),
         Text(label,
-            style:
-                const TextStyle(fontSize: 10, color: AppTheme.onSurfaceMuted)),
+            style: TextStyle(
+                fontSize: 10, color: context.appColors.onSurfaceMuted)),
       ],
     );
   }
@@ -633,17 +635,17 @@ class _TrendsTab extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Daily Spending',
+          Text('Daily Spending',
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.onSurface)),
+                  color: context.appColors.onSurface)),
           const SizedBox(height: 16),
           SizedBox(
             height: 130,
@@ -660,7 +662,7 @@ class _TrendsTab extends ConsumerWidget {
                         toY: val,
                         color: val > 0
                             ? AppTheme.expense.withOpacity(0.75)
-                            : AppTheme.surfaceCard2,
+                            : context.appColors.surfaceCard2,
                         width: 5,
                         borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(3)),
@@ -685,8 +687,9 @@ class _TrendsTab extends ConsumerWidget {
                         return Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text('${v.toInt()}',
-                              style: const TextStyle(
-                                  fontSize: 9, color: AppTheme.onSurfaceMuted)),
+                              style: TextStyle(
+                                  fontSize: 9,
+                                  color: context.appColors.onSurfaceMuted)),
                         );
                       },
                     ),
@@ -696,16 +699,17 @@ class _TrendsTab extends ConsumerWidget {
                   show: true,
                   drawVerticalLine: false,
                   horizontalInterval: maxVal > 0 ? maxVal / 3 : 1000,
-                  getDrawingHorizontalLine: (_) =>
-                      const FlLine(color: AppTheme.divider, strokeWidth: 0.5),
+                  getDrawingHorizontalLine: (_) => FlLine(
+                      color: context.appColors.divider, strokeWidth: 0.5),
                 ),
                 borderData: FlBorderData(show: false),
                 barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (_) => AppTheme.surfaceCard2,
+                    getTooltipColor: (_) => context.appColors.surfaceCard2,
                     getTooltipItem: (group, _, rod, __) => BarTooltipItem(
                       'Day ${group.x}\n${AppUtils.formatAmount(rod.toY, compact: true)}',
-                      const TextStyle(fontSize: 10, color: AppTheme.onSurface),
+                      TextStyle(
+                          fontSize: 10, color: context.appColors.onSurface),
                     ),
                   ),
                 ),
@@ -782,8 +786,8 @@ class _CategoryInsightsTab extends ConsumerWidget {
                         months[months.length - 2].month,
                       ))}'
                     : 'Tap a category to view its history',
-                style: const TextStyle(
-                    fontSize: 12, color: AppTheme.onSurfaceMuted)),
+                style: TextStyle(
+                    fontSize: 12, color: context.appColors.onSurfaceMuted)),
             const SizedBox(height: 16),
             ...categories.map((name) {
               final amount = _readCategoryAmount(current, name);
@@ -840,7 +844,7 @@ class _CategoryInsightCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        color: AppTheme.surfaceCard,
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           onTap: onTap,
@@ -886,15 +890,16 @@ class _CategoryInsightCard extends StatelessWidget {
                     const Spacer(),
                     Text(
                         '6-mo avg ${AppUtils.formatAmount(average, compact: true)}',
-                        style: const TextStyle(
-                            fontSize: 10, color: AppTheme.onSurfaceMuted)),
+                        style: TextStyle(
+                            fontSize: 10,
+                            color: context.appColors.onSurfaceMuted)),
                   ],
                 ),
                 const SizedBox(height: 5),
                 Text(
                     '$monthLabel: current · last month: ${AppUtils.formatAmount(previousAmount, compact: true)}',
-                    style: const TextStyle(
-                        fontSize: 10, color: AppTheme.onSurfaceMuted)),
+                    style: TextStyle(
+                        fontSize: 10, color: context.appColors.onSurfaceMuted)),
               ],
             ),
           ),
@@ -934,8 +939,8 @@ class _CategoryHistorySheet extends StatelessWidget {
 
     return Container(
       constraints: const BoxConstraints(maxHeight: 680),
-      decoration: const BoxDecoration(
-        color: AppTheme.surfaceCard,
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
@@ -950,7 +955,7 @@ class _CategoryHistorySheet extends StatelessWidget {
                   width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppTheme.divider,
+                    color: context.appColors.divider,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -968,9 +973,9 @@ class _CategoryHistorySheet extends StatelessWidget {
                   ),
                 ],
               ),
-              const Text('Six-month spending history',
-                  style:
-                      TextStyle(fontSize: 12, color: AppTheme.onSurfaceMuted)),
+              Text('Six-month spending history',
+                  style: TextStyle(
+                      fontSize: 12, color: context.appColors.onSurfaceMuted)),
               const SizedBox(height: 16),
               _CategoryHistoryStats(
                 current: current,
@@ -981,11 +986,11 @@ class _CategoryHistorySheet extends StatelessWidget {
               const SizedBox(height: 16),
               _CategoryHistoryChart(months: months, values: values),
               const SizedBox(height: 16),
-              const Text('MONTH-BY-MONTH',
+              Text('MONTH-BY-MONTH',
                   style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.onSurfaceMuted,
+                      color: context.appColors.onSurfaceMuted,
                       letterSpacing: 0.8)),
               const SizedBox(height: 8),
               ...months.asMap().entries.toList().reversed.map((entry) {
@@ -1033,16 +1038,22 @@ class _CategoryHistoryStats extends StatelessWidget {
         : '${change!.abs().toStringAsFixed(0)}% vs last month';
     return Row(
       children: [
-        Expanded(child: _historyStat('This month', current, AppTheme.primary)),
-        Expanded(child: _historyStat('6-mo average', average, Colors.orange)),
-        Expanded(child: _historyStat('6-mo total', total, AppTheme.expense)),
+        Expanded(
+            child:
+                _historyStat(context, 'This month', current, AppTheme.primary)),
+        Expanded(
+            child:
+                _historyStat(context, '6-mo average', average, Colors.orange)),
+        Expanded(
+            child:
+                _historyStat(context, '6-mo total', total, AppTheme.expense)),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Trend',
-                  style:
-                      TextStyle(fontSize: 10, color: AppTheme.onSurfaceMuted)),
+              Text('Trend',
+                  style: TextStyle(
+                      fontSize: 10, color: context.appColors.onSurfaceMuted)),
               const SizedBox(height: 4),
               Text(changeLabel,
                   style: TextStyle(
@@ -1057,13 +1068,14 @@ class _CategoryHistoryStats extends StatelessWidget {
     );
   }
 
-  Widget _historyStat(String label, double value, Color color) {
+  Widget _historyStat(
+      BuildContext context, String label, double value, Color color) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style:
-                const TextStyle(fontSize: 10, color: AppTheme.onSurfaceMuted),
+            style: TextStyle(
+                fontSize: 10, color: context.appColors.onSurfaceMuted),
             overflow: TextOverflow.ellipsis),
         const SizedBox(height: 4),
         Text(AppUtils.formatAmount(value, compact: true),
@@ -1088,7 +1100,7 @@ class _CategoryHistoryChart extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard2,
+        color: context.appColors.surfaceCard2,
         borderRadius: BorderRadius.circular(14),
       ),
       child: SizedBox(
@@ -1128,8 +1140,9 @@ class _CategoryHistoryChart extends StatelessWidget {
                       child: Text(
                         DateFormat('MMM')
                             .format(DateTime(month.year, month.month)),
-                        style: const TextStyle(
-                            fontSize: 9, color: AppTheme.onSurfaceMuted),
+                        style: TextStyle(
+                            fontSize: 9,
+                            color: context.appColors.onSurfaceMuted),
                       ),
                     );
                   },
@@ -1138,7 +1151,7 @@ class _CategoryHistoryChart extends StatelessWidget {
             ),
             lineTouchData: LineTouchData(
               touchTooltipData: LineTouchTooltipData(
-                getTooltipColor: (_) => AppTheme.surfaceCard,
+                getTooltipColor: (_) => context.appColors.surfaceCard,
                 getTooltipItems: (spots) => spots
                     .map((spot) => LineTooltipItem(
                           AppUtils.formatAmount(spot.y, compact: true),
@@ -1200,8 +1213,8 @@ class _CategoryMonthRow extends StatelessWidget {
         children: [
           Expanded(
             child: Text(label,
-                style:
-                    const TextStyle(fontSize: 12, color: AppTheme.onSurface)),
+                style: TextStyle(
+                    fontSize: 12, color: context.appColors.onSurface)),
           ),
           if (marker != null) ...[
             Text(marker,
@@ -1259,8 +1272,8 @@ class _CategoryCalculatorTabState
         const SizedBox(height: 4),
         Text(
             'Select categories and a date range to create a custom expense total.',
-            style:
-                const TextStyle(fontSize: 12, color: AppTheme.onSurfaceMuted)),
+            style: TextStyle(
+                fontSize: 12, color: context.appColors.onSurfaceMuted)),
         const SizedBox(height: 16),
         FutureBuilder<List<Transaction>>(
           future: IsarService.instance.getTransactionsByDateRange(_from, _to),
@@ -1301,11 +1314,11 @@ class _CategoryCalculatorTabState
                   },
                 ),
                 const SizedBox(height: 16),
-                const Text('SELECT CATEGORIES',
+                Text('SELECT CATEGORIES',
                     style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.onSurfaceMuted,
+                        color: context.appColors.onSurfaceMuted,
                         letterSpacing: 0.8)),
                 const SizedBox(height: 10),
                 categoriesAsync.when(
@@ -1371,11 +1384,11 @@ class _CalculatorDateRange extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('DATE RANGE',
+            Text('DATE RANGE',
                 style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.onSurfaceMuted,
+                    color: context.appColors.onSurfaceMuted,
                     letterSpacing: 0.8)),
             TextButton(
               onPressed: onReset,
@@ -1433,16 +1446,16 @@ class _CalculatorDateRange extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceCard2,
+          color: context.appColors.surfaceCard2,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppTheme.divider),
+          border: Border.all(color: context.appColors.divider),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(label,
-                style: const TextStyle(
-                    fontSize: 10, color: AppTheme.onSurfaceMuted)),
+                style: TextStyle(
+                    fontSize: 10, color: context.appColors.onSurfaceMuted)),
             const SizedBox(height: 3),
             Text(DateFormat('d MMM yyyy').format(date),
                 style:
@@ -1475,8 +1488,8 @@ class _CalculatorTotalCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(count == 0 ? 'Select categories' : 'Selected categories total',
-              style: const TextStyle(
-                  fontSize: 12, color: AppTheme.onSurfaceMuted)),
+              style: TextStyle(
+                  fontSize: 12, color: context.appColors.onSurfaceMuted)),
           const SizedBox(height: 5),
           Text(AppUtils.formatAmount(total, compact: true),
               style: const TextStyle(
@@ -1522,7 +1535,7 @@ class _InsightsTab extends ConsumerWidget {
             height: 200,
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceCard,
+              color: context.appColors.surfaceCard,
               borderRadius: BorderRadius.circular(16),
             ),
           ),
@@ -1588,12 +1601,12 @@ class _InsightsTab extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: pct,
-              backgroundColor: AppTheme.surfaceCard2,
+              backgroundColor: context.appColors.surfaceCard2,
               valueColor: AlwaysStoppedAnimation<Color>(color),
               minHeight: 8,
             ),
@@ -1609,8 +1622,8 @@ class _InsightsTab extends ConsumerWidget {
               ),
               Text(
                 'Limit: ${AppUtils.formatAmount(limit, compact: true)}',
-                style: const TextStyle(
-                    fontSize: 12, color: AppTheme.onSurfaceMuted),
+                style: TextStyle(
+                    fontSize: 12, color: context.appColors.onSurfaceMuted),
               ),
             ],
           ),
@@ -1624,7 +1637,7 @@ class _InsightsTab extends ConsumerWidget {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceCard,
+          color: context.appColors.surfaceCard,
           borderRadius: BorderRadius.circular(16),
         ),
         child: const EmptyState(
@@ -1642,7 +1655,7 @@ class _InsightsTab extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -1650,13 +1663,13 @@ class _InsightsTab extends ConsumerWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Spending by Weekday',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.onSurface,
+                    color: context.appColors.onSurface,
                   ),
                 ),
               ),
@@ -1697,7 +1710,7 @@ class _InsightsTab extends ConsumerWidget {
                             ? AppTheme.primary
                             : val > 0
                                 ? AppTheme.primary.withOpacity(0.4)
-                                : AppTheme.surfaceCard2,
+                                : context.appColors.surfaceCard2,
                         width: 28,
                         borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(6)),
@@ -1723,22 +1736,24 @@ class _InsightsTab extends ConsumerWidget {
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(
                             _weekdays[i],
-                            style: const TextStyle(
-                                fontSize: 10, color: AppTheme.onSurfaceMuted),
+                            style: TextStyle(
+                                fontSize: 10,
+                                color: context.appColors.onSurfaceMuted),
                           ),
                         );
                       },
                     ),
                   ),
                 ),
-                gridData: const FlGridData(show: false),
+                gridData: FlGridData(show: false),
                 borderData: FlBorderData(show: false),
                 barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (_) => AppTheme.surfaceCard2,
+                    getTooltipColor: (_) => context.appColors.surfaceCard2,
                     getTooltipItem: (group, _, rod, __) => BarTooltipItem(
                       '${_weekdays[group.x]}\n${AppUtils.formatAmount(rod.toY, compact: true)}',
-                      const TextStyle(fontSize: 10, color: AppTheme.onSurface),
+                      TextStyle(
+                          fontSize: 10, color: context.appColors.onSurface),
                     ),
                   ),
                 ),
@@ -1765,17 +1780,17 @@ class _InsightsTab extends ConsumerWidget {
                             isBusiest ? FontWeight.w700 : FontWeight.normal,
                         color: isBusiest
                             ? AppTheme.primary
-                            : AppTheme.onSurfaceMuted,
+                            : context.appColors.onSurfaceMuted,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Expanded(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(3),
                       child: LinearProgressIndicator(
                         value: pct,
-                        backgroundColor: AppTheme.surfaceCard2,
+                        backgroundColor: context.appColors.surfaceCard2,
                         valueColor: AlwaysStoppedAnimation<Color>(isBusiest
                             ? AppTheme.primary
                             : AppTheme.primary.withOpacity(0.4)),
@@ -1794,7 +1809,7 @@ class _InsightsTab extends ConsumerWidget {
                             isBusiest ? FontWeight.w700 : FontWeight.normal,
                         color: isBusiest
                             ? AppTheme.primary
-                            : AppTheme.onSurfaceMuted,
+                            : context.appColors.onSurfaceMuted,
                       ),
                       textAlign: TextAlign.right,
                       overflow: TextOverflow.ellipsis,
@@ -1821,28 +1836,30 @@ class _InsightsTab extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('All-Time Stats',
+          Text('All-Time Stats',
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.onSurface)),
+                  color: context.appColors.onSurface)),
           const SizedBox(height: 14),
           Row(
             children: [
               Expanded(
                   child: _statBox(
+                      context,
                       'Total Spent',
                       AppUtils.formatAmount(stats.totalSpent, compact: true),
                       AppTheme.expense)),
               const SizedBox(width: 10),
               Expanded(
                   child: _statBox(
+                      context,
                       'Total Income',
                       AppUtils.formatAmount(stats.totalIncome, compact: true),
                       AppTheme.income)),
@@ -1852,11 +1869,12 @@ class _InsightsTab extends ConsumerWidget {
           Row(
             children: [
               Expanded(
-                  child: _statBox('Transactions', stats.totalTxns.toString(),
-                      AppTheme.primary)),
+                  child: _statBox(context, 'Transactions',
+                      stats.totalTxns.toString(), AppTheme.primary)),
               const SizedBox(width: 10),
               Expanded(
                   child: _statBox(
+                      context,
                       'Avg/Month',
                       AppUtils.formatAmount(stats.avgMonthlySpend,
                           compact: true),
@@ -1868,7 +1886,8 @@ class _InsightsTab extends ConsumerWidget {
     );
   }
 
-  Widget _statBox(String label, String value, Color color) {
+  Widget _statBox(
+      BuildContext context, String label, String value, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -1879,8 +1898,8 @@ class _InsightsTab extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: const TextStyle(
-                  fontSize: 10, color: AppTheme.onSurfaceMuted)),
+              style: TextStyle(
+                  fontSize: 10, color: context.appColors.onSurfaceMuted)),
           const SizedBox(height: 4),
           Text(value,
               style: TextStyle(
@@ -1926,10 +1945,10 @@ class _TopSpendsTab extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
                   'Top ${txns.length} expenses this month',
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.onSurfaceMuted,
+                      color: context.appColors.onSurfaceMuted,
                       letterSpacing: 0.5),
                 ),
               );
@@ -1941,7 +1960,7 @@ class _TopSpendsTab extends ConsumerWidget {
             return Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppTheme.surfaceCard,
+                color: context.appColors.surfaceCard,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Row(
@@ -1952,8 +1971,8 @@ class _TopSpendsTab extends ConsumerWidget {
                     height: 28,
                     decoration: BoxDecoration(
                       color: rank <= 3
-                          ? _rankColor(rank).withOpacity(0.15)
-                          : AppTheme.surfaceCard2,
+                          ? _rankColor(context, rank).withOpacity(0.15)
+                          : context.appColors.surfaceCard2,
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -1963,8 +1982,8 @@ class _TopSpendsTab extends ConsumerWidget {
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
                             color: rank <= 3
-                                ? _rankColor(rank)
-                                : AppTheme.onSurfaceMuted),
+                                ? _rankColor(context, rank)
+                                : context.appColors.onSurfaceMuted),
                       ),
                     ),
                   ),
@@ -1982,10 +2001,10 @@ class _TopSpendsTab extends ConsumerWidget {
                           t.description.isEmpty
                               ? t.categoryName
                               : t.description,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: AppTheme.onSurface),
+                              color: context.appColors.onSurface),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -1993,29 +2012,29 @@ class _TopSpendsTab extends ConsumerWidget {
                           children: [
                             Flexible(
                               child: Text(t.categoryName,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 11,
-                                      color: AppTheme.onSurfaceMuted),
+                                      color: context.appColors.onSurfaceMuted),
                                   overflow: TextOverflow.ellipsis),
                             ),
                             const SizedBox(width: 6),
                             Text('·',
-                                style: const TextStyle(
-                                    color: AppTheme.onSurfaceMuted)),
+                                style: TextStyle(
+                                    color: context.appColors.onSurfaceMuted)),
                             const SizedBox(width: 6),
                             Text(AppUtils.formatDate(t.date),
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 11,
-                                    color: AppTheme.onSurfaceMuted)),
+                                    color: context.appColors.onSurfaceMuted)),
                           ],
                         ),
-                        const SizedBox(height: 5),
+                        SizedBox(height: 5),
                         // % bar
                         ClipRRect(
                           borderRadius: BorderRadius.circular(2),
                           child: LinearProgressIndicator(
                             value: pct / 100,
-                            backgroundColor: AppTheme.surfaceCard2,
+                            backgroundColor: context.appColors.surfaceCard2,
                             valueColor: AlwaysStoppedAnimation<Color>(
                                 AppTheme.expense.withOpacity(0.6)),
                             minHeight: 3,
@@ -2037,8 +2056,9 @@ class _TopSpendsTab extends ConsumerWidget {
                       ),
                       Text(
                         '${pct.toStringAsFixed(1)}%',
-                        style: const TextStyle(
-                            fontSize: 10, color: AppTheme.onSurfaceMuted),
+                        style: TextStyle(
+                            fontSize: 10,
+                            color: context.appColors.onSurfaceMuted),
                       ),
                     ],
                   ),
@@ -2053,16 +2073,16 @@ class _TopSpendsTab extends ConsumerWidget {
     );
   }
 
-  Color _rankColor(int rank) {
+  Color _rankColor(BuildContext context, int rank) {
     switch (rank) {
       case 1:
         return const Color(0xFFFFD700); // gold
       case 2:
         return const Color(0xFFB0B0B0); // silver
       case 3:
-        return const Color(0xFFCD7F32); // bronze
+        return Color(0xFFCD7F32); // bronze
       default:
-        return AppTheme.onSurfaceMuted;
+        return context.appColors.onSurfaceMuted;
     }
   }
 }
@@ -2106,22 +2126,22 @@ class _PieChartCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [
           Text(
             AppUtils.formatAmount(total),
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.w800,
-                color: AppTheme.onSurface),
+                color: context.appColors.onSurface),
           ),
           Text(
             'Total ${type == TransactionType.expense ? 'Expenses' : 'Income'}',
-            style:
-                const TextStyle(fontSize: 12, color: AppTheme.onSurfaceMuted),
+            style: TextStyle(
+                fontSize: 12, color: context.appColors.onSurfaceMuted),
           ),
           const SizedBox(height: 20),
           SizedBox(
@@ -2175,8 +2195,8 @@ class _PieChartCard extends StatelessWidget {
             ),
             Text(
               AppUtils.formatAmount(sorted[touchedIndex].value),
-              style:
-                  const TextStyle(fontSize: 12, color: AppTheme.onSurfaceMuted),
+              style: TextStyle(
+                  fontSize: 12, color: context.appColors.onSurfaceMuted),
             ),
           ],
         ],
@@ -2203,7 +2223,7 @@ class _CategoryRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -2218,35 +2238,35 @@ class _CategoryRow extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(name,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
-                        color: AppTheme.onSurface),
+                        color: context.appColors.onSurface),
                     overflow: TextOverflow.ellipsis),
               ),
               Text(
                 AppUtils.formatAmount(amount, compact: true),
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.onSurface),
+                    color: context.appColors.onSurface),
               ),
               const SizedBox(width: 8),
               SizedBox(
                 width: 34,
                 child: Text('${percent.toStringAsFixed(0)}%',
-                    style: const TextStyle(
-                        fontSize: 11, color: AppTheme.onSurfaceMuted),
+                    style: TextStyle(
+                        fontSize: 11, color: context.appColors.onSurfaceMuted),
                     textAlign: TextAlign.right),
               ),
             ],
           ),
-          const SizedBox(height: 7),
+          SizedBox(height: 7),
           ClipRRect(
             borderRadius: BorderRadius.circular(3),
             child: LinearProgressIndicator(
               value: percent / 100,
-              backgroundColor: AppTheme.surfaceCard2,
+              backgroundColor: context.appColors.surfaceCard2,
               valueColor: AlwaysStoppedAnimation<Color>(color),
               minHeight: 4,
             ),

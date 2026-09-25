@@ -39,7 +39,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
             ? TextField(
                 controller: _searchCtrl,
                 autofocus: true,
-                style: const TextStyle(color: AppTheme.onSurface),
+                style: TextStyle(color: context.appColors.onSurface),
                 decoration: const InputDecoration(
                   hintText: 'Search transactions...',
                   border: InputBorder.none,
@@ -65,8 +65,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                   ),
                   IconButton(
                     icon: Icon(Icons.chevron_right,
-                        color:
-                            sm.isCurrentMonth ? AppTheme.onSurfaceMuted : null),
+                        color: sm.isCurrentMonth
+                            ? context.appColors.onSurfaceMuted
+                            : null),
                     onPressed: sm.isCurrentMonth
                         ? null
                         : () => ref.read(selectedMonthProvider.notifier).state =
@@ -161,7 +162,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard2,
+        color: context.appColors.surfaceCard2,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -169,11 +170,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           Expanded(
               child: _stripItem('Income', income, AppTheme.income,
                   Icons.arrow_downward_rounded)),
-          Container(width: 1, height: 32, color: AppTheme.divider),
+          Container(width: 1, height: 32, color: context.appColors.divider),
           Expanded(
               child: _stripItem('Expense', expense, AppTheme.expense,
                   Icons.arrow_upward_rounded)),
-          Container(width: 1, height: 32, color: AppTheme.divider),
+          Container(width: 1, height: 32, color: context.appColors.divider),
           Expanded(
               child: _stripItem(
                   'Balance',
@@ -197,8 +198,8 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           overflow: TextOverflow.ellipsis,
         ),
         Text(label,
-            style:
-                const TextStyle(fontSize: 10, color: AppTheme.onSurfaceMuted)),
+            style: TextStyle(
+                fontSize: 10, color: context.appColors.onSurfaceMuted)),
       ],
     );
   }
@@ -226,10 +227,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               children: [
                 Text(
                   dateLabel,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.onSurfaceMuted,
+                      color: context.appColors.onSurfaceMuted,
                       letterSpacing: 0.5),
                 ),
                 Text(
@@ -382,8 +383,8 @@ class _FilterSheet extends ConsumerWidget {
     final accounts = ref.watch(accountsProvider);
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.surfaceCard,
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
@@ -396,7 +397,7 @@ class _FilterSheet extends ConsumerWidget {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                  color: AppTheme.divider,
+                  color: context.appColors.divider,
                   borderRadius: BorderRadius.circular(2)),
             ),
           ),
@@ -452,8 +453,9 @@ class _FilterSheet extends ConsumerWidget {
                   letterSpacing: 0.8)),
           const SizedBox(height: 8),
           if (accounts.isEmpty)
-            const Text('No accounts available',
-                style: TextStyle(fontSize: 12, color: AppTheme.onSurfaceMuted))
+            Text('No accounts available',
+                style: TextStyle(
+                    fontSize: 12, color: context.appColors.onSurfaceMuted))
           else
             Wrap(
               spacing: 8,
@@ -524,12 +526,12 @@ class _FilterSheet extends ConsumerWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: selected
               ? AppTheme.primary.withOpacity(0.15)
-              : AppTheme.surfaceCard2,
+              : context.appColors.surfaceCard2,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: selected ? AppTheme.primary : Colors.transparent,
@@ -541,7 +543,8 @@ class _FilterSheet extends ConsumerWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
-            color: selected ? AppTheme.primary : AppTheme.onSurfaceMuted,
+            color:
+                selected ? AppTheme.primary : context.appColors.onSurfaceMuted,
           ),
         ),
       ),

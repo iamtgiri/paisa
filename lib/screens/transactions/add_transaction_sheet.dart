@@ -197,8 +197,8 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
     final selectedAccountId = _resolveSelectedAccountId(accounts);
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.surfaceCard,
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
@@ -211,7 +211,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: AppTheme.divider,
+                color: context.appColors.divider,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -354,7 +354,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   Widget _buildTypeToggle() {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard2,
+        color: context.appColors.surfaceCard2,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -390,12 +390,13 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon,
-                  size: 16, color: selected ? color : AppTheme.onSurfaceMuted),
-              const SizedBox(width: 6),
+                  size: 16,
+                  color: selected ? color : context.appColors.onSurfaceMuted),
+              SizedBox(width: 6),
               Text(
                 label,
                 style: TextStyle(
-                  color: selected ? color : AppTheme.onSurfaceMuted,
+                  color: selected ? color : context.appColors.onSurfaceMuted,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
                   fontSize: 14,
                 ),
@@ -436,14 +437,14 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceCard2,
+          color: context.appColors.surfaceCard2,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.divider),
+          border: Border.all(color: context.appColors.divider),
         ),
         child: Row(
           children: [
-            const Icon(Icons.calendar_today_outlined,
-                size: 14, color: AppTheme.onSurfaceMuted),
+            Icon(Icons.calendar_today_outlined,
+                size: 14, color: context.appColors.onSurfaceMuted),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -497,14 +498,15 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
         height: 54,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceCard2,
+          color: context.appColors.surfaceCard2,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.divider),
+          border: Border.all(color: context.appColors.divider),
         ),
         alignment: Alignment.centerLeft,
-        child: const Text(
+        child: Text(
           'Add an account first',
-          style: TextStyle(fontSize: 13, color: AppTheme.onSurfaceMuted),
+          style:
+              TextStyle(fontSize: 13, color: context.appColors.onSurfaceMuted),
         ),
       );
     }
@@ -512,14 +514,14 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard2,
+        color: context.appColors.surfaceCard2,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.divider),
+        border: Border.all(color: context.appColors.divider),
       ),
       child: DropdownButtonFormField<String>(
         initialValue: selectedAccountId,
         isExpanded: true,
-        dropdownColor: AppTheme.surfaceCard2,
+        dropdownColor: context.appColors.surfaceCard2,
         decoration: const InputDecoration(
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
@@ -566,13 +568,13 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: _isFavorite
-              ? const Color(0xFFFFB74D).withOpacity(0.1)
-              : AppTheme.surfaceCard2,
+              ? Color(0xFFFFB74D).withOpacity(0.1)
+              : context.appColors.surfaceCard2,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: _isFavorite
-                ? const Color(0xFFFFB74D).withOpacity(0.3)
-                : AppTheme.divider,
+                ? Color(0xFFFFB74D).withOpacity(0.3)
+                : context.appColors.divider,
           ),
         ),
         child: Row(
@@ -581,16 +583,16 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               _isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
               size: 18,
               color: _isFavorite
-                  ? const Color(0xFFFFB74D)
-                  : AppTheme.onSurfaceMuted,
+                  ? Color(0xFFFFB74D)
+                  : context.appColors.onSurfaceMuted,
             ),
             const SizedBox(width: 10),
             Text(
               'Save as Favorite',
               style: TextStyle(
                 color: _isFavorite
-                    ? const Color(0xFFFFB74D)
-                    : AppTheme.onSurfaceMuted,
+                    ? Color(0xFFFFB74D)
+                    : context.appColors.onSurfaceMuted,
                 fontSize: 14,
               ),
             ),

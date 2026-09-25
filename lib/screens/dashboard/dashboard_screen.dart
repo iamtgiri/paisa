@@ -49,8 +49,8 @@ class DashboardScreen extends ConsumerWidget {
                         onTap: () => ref
                             .read(selectedMonthProvider.notifier)
                             .state = sm.prev(),
-                        child: const Icon(Icons.chevron_left,
-                            color: AppTheme.onSurface),
+                        child: Icon(Icons.chevron_left,
+                            color: context.appColors.onSurface),
                       ),
                       Text(
                         AppUtils.formatMonthYear(sm.year, sm.month),
@@ -64,8 +64,8 @@ class DashboardScreen extends ConsumerWidget {
                                 .state = sm.next(),
                         child: Icon(Icons.chevron_right,
                             color: sm.isCurrentMonth
-                                ? AppTheme.onSurfaceMuted
-                                : AppTheme.onSurface),
+                                ? context.appColors.onSurfaceMuted
+                                : context.appColors.onSurface),
                       ),
                     ],
                   ),
@@ -87,7 +87,7 @@ class DashboardScreen extends ConsumerWidget {
                 margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                 height: 190,
                 decoration: BoxDecoration(
-                    color: AppTheme.surfaceCard,
+                    color: context.appColors.surfaceCard,
                     borderRadius: BorderRadius.circular(20)),
               ),
               error: (_, __) => const SizedBox.shrink(),
@@ -173,17 +173,18 @@ class DashboardScreen extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('RECENT',
+                  Text('RECENT',
                       style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: AppTheme.onSurfaceMuted,
+                          color: context.appColors.onSurfaceMuted,
                           letterSpacing: 0.8)),
                   recentAsync.whenOrNull(
                         data: (txns) => Text(
                           '${txns.length} transactions',
-                          style: const TextStyle(
-                              fontSize: 11, color: AppTheme.onSurfaceMuted),
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: context.appColors.onSurfaceMuted),
                         ),
                       ) ??
                       const SizedBox.shrink(),
@@ -255,22 +256,23 @@ class DashboardScreen extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceCard2,
+          color: context.appColors.surfaceCard2,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           children: [
-            const Icon(Icons.bar_chart,
-                size: 13, color: AppTheme.onSurfaceMuted),
+            Icon(Icons.bar_chart,
+                size: 13, color: context.appColors.onSurfaceMuted),
             const SizedBox(width: 7),
-            const Text('Top spend: ',
-                style: TextStyle(fontSize: 11, color: AppTheme.onSurfaceMuted)),
+            Text('Top spend: ',
+                style: TextStyle(
+                    fontSize: 11, color: context.appColors.onSurfaceMuted)),
             Flexible(
               child: Text(topCat.key,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.onSurface),
+                      color: context.appColors.onSurface),
                   overflow: TextOverflow.ellipsis),
             ),
             const SizedBox(width: 8),
@@ -304,13 +306,13 @@ class DashboardScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.fromLTRB(16, 14, 16, 8),
           child: Text('BUDGET ALERTS',
               style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.onSurfaceMuted,
+                  color: context.appColors.onSurfaceMuted,
                   letterSpacing: 0.8)),
         ),
         SizedBox(
@@ -348,10 +350,10 @@ class DashboardScreen extends ConsumerWidget {
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(b.categoryName,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
-                                  color: AppTheme.onSurface),
+                                  color: context.appColors.onSurface),
                               overflow: TextOverflow.ellipsis),
                         ),
                         if (isOver)
@@ -359,12 +361,12 @@ class DashboardScreen extends ConsumerWidget {
                               size: 12, color: AppTheme.expense),
                       ],
                     ),
-                    const Spacer(),
+                    Spacer(),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(2),
                       child: LinearProgressIndicator(
                         value: pct,
-                        backgroundColor: AppTheme.surfaceCard2,
+                        backgroundColor: context.appColors.surfaceCard2,
                         valueColor: AlwaysStoppedAnimation<Color>(barColor),
                         minHeight: 4,
                       ),
@@ -395,13 +397,13 @@ class DashboardScreen extends ConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text('QUICK ADD',
                   style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.onSurfaceMuted,
+                      color: context.appColors.onSurfaceMuted,
                       letterSpacing: 0.8)),
             ),
             SizedBox(
@@ -512,21 +514,21 @@ class _AccountOverview extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'YOUR MONEY',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.onSurfaceMuted,
+                    color: context.appColors.onSurfaceMuted,
                     letterSpacing: 0.8,
                   ),
                 ),
                 Text(
                   AppUtils.formatAmount(total, compact: true),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
-                    color: AppTheme.onSurface,
+                    color: context.appColors.onSurface,
                   ),
                 ),
               ],
@@ -564,7 +566,7 @@ class _AccountBalanceCard extends StatelessWidget {
       width: 164,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: color.withOpacity(0.22)),
       ),
@@ -590,9 +592,9 @@ class _AccountBalanceCard extends StatelessWidget {
                   account.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
-                    color: AppTheme.onSurfaceMuted,
+                    color: context.appColors.onSurfaceMuted,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -600,10 +602,10 @@ class _AccountBalanceCard extends StatelessWidget {
                   AppUtils.formatAmount(account.balance, compact: true),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
-                    color: AppTheme.onSurface,
+                    color: context.appColors.onSurface,
                   ),
                 ),
               ],
@@ -686,9 +688,9 @@ class _FinancialPulse extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     '$changeText compared with last month',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: AppTheme.onSurfaceMuted,
+                      color: context.appColors.onSurfaceMuted,
                     ),
                   ),
                 ],
@@ -768,9 +770,9 @@ class _BurnRateCard extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     '${AppUtils.formatAmount(insight.dailyRate, compact: true)}/day. $limitMessage',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: AppTheme.onSurfaceMuted,
+                      color: context.appColors.onSurfaceMuted,
                     ),
                   ),
                 ],
@@ -879,7 +881,9 @@ class _HeroCardState extends State<_HeroCard>
                 style: TextStyle(
                   fontSize: 34,
                   fontWeight: FontWeight.w800,
-                  color: balance >= 0 ? AppTheme.onSurface : AppTheme.expense,
+                  color: balance >= 0
+                      ? context.appColors.onSurface
+                      : AppTheme.expense,
                   letterSpacing: -0.5,
                 ),
               );
@@ -934,8 +938,9 @@ class _HeroCardState extends State<_HeroCard>
                   limitOver ? '⚠ Over limit!' : 'Monthly limit',
                   style: TextStyle(
                     fontSize: 10,
-                    color:
-                        limitOver ? AppTheme.expense : AppTheme.onSurfaceMuted,
+                    color: limitOver
+                        ? AppTheme.expense
+                        : context.appColors.onSurfaceMuted,
                     fontWeight: limitOver ? FontWeight.w700 : FontWeight.normal,
                   ),
                 ),
@@ -943,18 +948,19 @@ class _HeroCardState extends State<_HeroCard>
                   '${(limitPct * 100).toStringAsFixed(0)}% of ${AppUtils.formatAmount(widget.spendingLimit!, compact: true)}',
                   style: TextStyle(
                     fontSize: 10,
-                    color:
-                        limitOver ? AppTheme.expense : AppTheme.onSurfaceMuted,
+                    color: limitOver
+                        ? AppTheme.expense
+                        : context.appColors.onSurfaceMuted,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 5),
+            SizedBox(height: 5),
             ClipRRect(
               borderRadius: BorderRadius.circular(3),
               child: LinearProgressIndicator(
                 value: limitPct,
-                backgroundColor: AppTheme.surfaceCard2,
+                backgroundColor: context.appColors.surfaceCard2,
                 valueColor: AlwaysStoppedAnimation<Color>(limitOver
                     ? AppTheme.expense
                     : limitPct >= 0.8
@@ -977,8 +983,8 @@ class _HeroCardState extends State<_HeroCard>
             style: TextStyle(
                 fontSize: 15, fontWeight: FontWeight.w700, color: color)),
         Text(label,
-            style:
-                const TextStyle(fontSize: 10, color: AppTheme.onSurfaceMuted)),
+            style: TextStyle(
+                fontSize: 10, color: context.appColors.onSurfaceMuted)),
       ],
     );
   }
@@ -1001,9 +1007,9 @@ class _FavoriteQuickCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceCard2,
+          color: context.appColors.surfaceCard2,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.divider),
+          border: Border.all(color: context.appColors.divider),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1017,10 +1023,10 @@ class _FavoriteQuickCard extends StatelessWidget {
               children: [
                 Text(
                   t.description.isEmpty ? t.categoryName : t.description,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.onSurface),
+                      color: context.appColors.onSurface),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

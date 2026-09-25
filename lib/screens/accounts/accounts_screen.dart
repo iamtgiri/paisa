@@ -47,11 +47,11 @@ class AccountsScreen extends ConsumerWidget {
                 // Net worth card
                 _NetWorthCard(accounts: accounts),
                 const SizedBox(height: 20),
-                const Text('YOUR ACCOUNTS',
+                Text('YOUR ACCOUNTS',
                     style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.onSurfaceMuted,
+                        color: context.appColors.onSurfaceMuted,
                         letterSpacing: 0.8)),
                 const SizedBox(height: 10),
                 ...accounts.map((a) => Padding(
@@ -88,11 +88,11 @@ class AccountsScreen extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
-        const Text('RECENT TRANSFERS',
+        Text('RECENT TRANSFERS',
             style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
-                color: AppTheme.onSurfaceMuted,
+                color: context.appColors.onSurfaceMuted,
                 letterSpacing: 0.8)),
         const SizedBox(height: 10),
         ...recent.map((t) {
@@ -103,7 +103,7 @@ class AccountsScreen extends ConsumerWidget {
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceCard,
+              color: context.appColors.surfaceCard,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -113,8 +113,8 @@ class AccountsScreen extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     '${from?.name ?? "?"} → ${to?.name ?? "?"}',
-                    style: const TextStyle(
-                        fontSize: 13, color: AppTheme.onSurface),
+                    style: TextStyle(
+                        fontSize: 13, color: context.appColors.onSurface),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -155,8 +155,9 @@ class AccountsScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Set current balance:',
-                style: TextStyle(fontSize: 12, color: AppTheme.onSurfaceMuted)),
+            Text('Set current balance:',
+                style: TextStyle(
+                    fontSize: 12, color: context.appColors.onSurfaceMuted)),
             const SizedBox(height: 12),
             TextField(
               controller: ctrl,
@@ -250,15 +251,17 @@ class _NetWorthCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Total Balance',
-              style: TextStyle(fontSize: 12, color: AppTheme.onSurfaceMuted)),
-          const SizedBox(height: 6),
+          Text('Total Balance',
+              style: TextStyle(
+                  fontSize: 12, color: context.appColors.onSurfaceMuted)),
+          SizedBox(height: 6),
           Text(
             AppUtils.formatAmount(total),
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.w800,
-              color: total >= 0 ? AppTheme.onSurface : AppTheme.expense,
+              color:
+                  total >= 0 ? context.appColors.onSurface : AppTheme.expense,
               letterSpacing: -0.5,
             ),
           ),
@@ -288,8 +291,9 @@ class _NetWorthCard extends StatelessWidget {
                     const SizedBox(width: 5),
                     Text(
                       AppUtils.formatAmount(a.balance, compact: true),
-                      style: const TextStyle(
-                          fontSize: 11, color: AppTheme.onSurfaceMuted),
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: context.appColors.onSurfaceMuted),
                     ),
                   ],
                 ),
@@ -323,7 +327,7 @@ class _AccountCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withOpacity(0.15)),
       ),
@@ -347,10 +351,10 @@ class _AccountCard extends StatelessWidget {
                   children: [
                     Flexible(
                       child: Text(a.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: AppTheme.onSurface),
+                              color: context.appColors.onSurface),
                           overflow: TextOverflow.ellipsis),
                     ),
                     if (a.isDefault) ...[
@@ -387,17 +391,17 @@ class _AccountCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: const Icon(Icons.tune_outlined, size: 16),
+                icon: Icon(Icons.tune_outlined, size: 16),
                 onPressed: onAdjust,
-                color: AppTheme.onSurfaceMuted,
+                color: context.appColors.onSurfaceMuted,
                 tooltip: 'Adjust balance',
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 padding: EdgeInsets.zero,
               ),
               IconButton(
-                icon: const Icon(Icons.edit_outlined, size: 16),
+                icon: Icon(Icons.edit_outlined, size: 16),
                 onPressed: onEdit,
-                color: AppTheme.onSurfaceMuted,
+                color: context.appColors.onSurfaceMuted,
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 padding: EdgeInsets.zero,
               ),
@@ -466,8 +470,8 @@ class _AccountFormSheetState extends ConsumerState<_AccountFormSheet> {
     final isEdit = widget.existing != null;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.surfaceCard,
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + kb),
@@ -481,7 +485,7 @@ class _AccountFormSheetState extends ConsumerState<_AccountFormSheet> {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                    color: AppTheme.divider,
+                    color: context.appColors.divider,
                     borderRadius: BorderRadius.circular(2)),
               ),
             ),
@@ -499,11 +503,11 @@ class _AccountFormSheetState extends ConsumerState<_AccountFormSheet> {
             if (!isEdit) ...[
               const SizedBox(height: 12),
               // Quick presets
-              const Text('QUICK ADD',
+              Text('QUICK ADD',
                   style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.onSurfaceMuted,
+                      color: context.appColors.onSurfaceMuted,
                       letterSpacing: 0.8)),
               const SizedBox(height: 8),
               Wrap(
@@ -582,11 +586,11 @@ class _AccountFormSheetState extends ConsumerState<_AccountFormSheet> {
             ),
             const SizedBox(height: 16),
             // Color
-            const Text('COLOR',
+            Text('COLOR',
                 style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.onSurfaceMuted,
+                    color: context.appColors.onSurfaceMuted,
                     letterSpacing: 0.8)),
             const SizedBox(height: 8),
             Wrap(
@@ -603,7 +607,8 @@ class _AccountFormSheetState extends ConsumerState<_AccountFormSheet> {
                       color: Color(c.$2),
                       shape: BoxShape.circle,
                       border: sel
-                          ? Border.all(color: AppTheme.onSurface, width: 2.5)
+                          ? Border.all(
+                              color: context.appColors.onSurface, width: 2.5)
                           : null,
                     ),
                     child: sel
@@ -615,11 +620,11 @@ class _AccountFormSheetState extends ConsumerState<_AccountFormSheet> {
             ),
             const SizedBox(height: 16),
             // Icon
-            const Text('ICON',
+            Text('ICON',
                 style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.onSurfaceMuted,
+                    color: context.appColors.onSurfaceMuted,
                     letterSpacing: 0.8)),
             const SizedBox(height: 8),
             Wrap(
@@ -630,13 +635,13 @@ class _AccountFormSheetState extends ConsumerState<_AccountFormSheet> {
                 return GestureDetector(
                   onTap: () => setState(() => _selectedIcon = ic.$2),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
+                    duration: Duration(milliseconds: 150),
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
                       color: sel
                           ? Color(_selectedColor).withOpacity(0.15)
-                          : AppTheme.surfaceCard2,
+                          : context.appColors.surfaceCard2,
                       borderRadius: BorderRadius.circular(10),
                       border: sel
                           ? Border.all(color: Color(_selectedColor), width: 1.5)
@@ -646,7 +651,7 @@ class _AccountFormSheetState extends ConsumerState<_AccountFormSheet> {
                         size: 18,
                         color: sel
                             ? Color(_selectedColor)
-                            : AppTheme.onSurfaceMuted),
+                            : context.appColors.onSurfaceMuted),
                   ),
                 );
               }).toList(),
@@ -738,8 +743,8 @@ class _TransferSheetState extends ConsumerState<_TransferSheet> {
   Widget build(BuildContext context) {
     final kb = MediaQuery.of(context).viewInsets.bottom;
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.surfaceCard,
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + kb),
@@ -752,7 +757,7 @@ class _TransferSheetState extends ConsumerState<_TransferSheet> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                  color: AppTheme.divider,
+                  color: context.appColors.divider,
                   borderRadius: BorderRadius.circular(2)),
             ),
           ),
@@ -767,24 +772,24 @@ class _TransferSheetState extends ConsumerState<_TransferSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('FROM',
+                    Text('FROM',
                         style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: AppTheme.onSurfaceMuted,
+                            color: context.appColors.onSurfaceMuted,
                             letterSpacing: 0.8)),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceCard2,
+                        color: context.appColors.surfaceCard2,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppTheme.divider),
+                        border: Border.all(color: context.appColors.divider),
                       ),
                       child: DropdownButtonFormField<String>(
                         value: _fromId,
                         isExpanded: true,
-                        dropdownColor: AppTheme.surfaceCard2,
+                        dropdownColor: context.appColors.surfaceCard2,
                         decoration: const InputDecoration(
                             border: InputBorder.none,
                             filled: false,
@@ -814,24 +819,24 @@ class _TransferSheetState extends ConsumerState<_TransferSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('TO',
+                    Text('TO',
                         style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: AppTheme.onSurfaceMuted,
+                            color: context.appColors.onSurfaceMuted,
                             letterSpacing: 0.8)),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceCard2,
+                        color: context.appColors.surfaceCard2,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppTheme.divider),
+                        border: Border.all(color: context.appColors.divider),
                       ),
                       child: DropdownButtonFormField<String>(
                         value: _toId,
                         isExpanded: true,
-                        dropdownColor: AppTheme.surfaceCard2,
+                        dropdownColor: context.appColors.surfaceCard2,
                         decoration: const InputDecoration(
                             border: InputBorder.none,
                             filled: false,

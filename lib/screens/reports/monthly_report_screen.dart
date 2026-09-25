@@ -114,10 +114,10 @@ class MonthlyReportScreen extends ConsumerWidget {
         children: [
           Text(
             AppUtils.formatMonthYear(sm.year, sm.month),
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: AppTheme.onSurfaceMuted),
+                color: context.appColors.onSurfaceMuted),
           ),
           const SizedBox(height: 8),
           Text('Monthly Report',
@@ -128,18 +128,21 @@ class MonthlyReportScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: _reportStat(
+                    context,
                     'Income',
                     AppUtils.formatAmount(summary.income, compact: true),
                     AppTheme.income),
               ),
               Expanded(
                 child: _reportStat(
+                    context,
                     'Expense',
                     AppUtils.formatAmount(summary.expense, compact: true),
                     AppTheme.expense),
               ),
               Expanded(
                 child: _reportStat(
+                    context,
                     'Balance',
                     AppUtils.formatAmount(balance, compact: true),
                     balance >= 0 ? AppTheme.income : AppTheme.expense),
@@ -147,26 +150,27 @@ class MonthlyReportScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Divider(height: 1, color: AppTheme.divider),
+          Divider(height: 1, color: context.appColors.divider),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
-                child: _reportStat('Savings Rate',
+                child: _reportStat(context, 'Savings Rate',
                     '${savings.toStringAsFixed(1)}%', savingsColor),
               ),
               Expanded(
-                child: _reportStat(
-                    'Transactions', summary.count.toString(), AppTheme.primary),
+                child: _reportStat(context, 'Transactions',
+                    summary.count.toString(), AppTheme.primary),
               ),
               Expanded(
                 child: _reportStat(
+                    context,
                     'Daily Avg',
                     AppUtils.formatAmount(
                         summary.expense /
                             DateTime(sm.year, sm.month + 1, 0).day,
                         compact: true),
-                    AppTheme.onSurface),
+                    context.appColors.onSurface),
               ),
             ],
           ),
@@ -175,13 +179,14 @@ class MonthlyReportScreen extends ConsumerWidget {
     );
   }
 
-  Widget _reportStat(String label, String value, Color color) {
+  Widget _reportStat(
+      BuildContext context, String label, String value, Color color) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style:
-                const TextStyle(fontSize: 10, color: AppTheme.onSurfaceMuted)),
+            style: TextStyle(
+                fontSize: 10, color: context.appColors.onSurfaceMuted)),
         const SizedBox(height: 3),
         Text(value,
             style: TextStyle(
@@ -205,7 +210,7 @@ class MonthlyReportScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -215,10 +220,10 @@ class MonthlyReportScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(title,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.onSurface)),
+                      color: context.appColors.onSurface)),
               Text(AppUtils.formatAmount(total, compact: true),
                   style: TextStyle(
                       fontSize: 14,
@@ -236,8 +241,8 @@ class MonthlyReportScreen extends ConsumerWidget {
                   Expanded(
                     flex: 4,
                     child: Text(e.key,
-                        style: const TextStyle(
-                            fontSize: 12, color: AppTheme.onSurface),
+                        style: TextStyle(
+                            fontSize: 12, color: context.appColors.onSurface),
                         overflow: TextOverflow.ellipsis),
                   ),
                   Expanded(
@@ -246,7 +251,7 @@ class MonthlyReportScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(3),
                       child: LinearProgressIndicator(
                         value: pct / 100,
-                        backgroundColor: AppTheme.surfaceCard2,
+                        backgroundColor: context.appColors.surfaceCard2,
                         valueColor: AlwaysStoppedAnimation<Color>(
                             accentColor.withOpacity(0.7)),
                         minHeight: 5,
@@ -258,10 +263,10 @@ class MonthlyReportScreen extends ConsumerWidget {
                     width: 60,
                     child: Text(
                       AppUtils.formatAmount(e.value, compact: true),
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: AppTheme.onSurface),
+                          color: context.appColors.onSurface),
                       textAlign: TextAlign.right,
                     ),
                   ),
@@ -273,8 +278,8 @@ class MonthlyReportScreen extends ConsumerWidget {
             const SizedBox(height: 6),
             Text(
               '+${sorted.length - 5} more categories',
-              style:
-                  const TextStyle(fontSize: 11, color: AppTheme.onSurfaceMuted),
+              style: TextStyle(
+                  fontSize: 11, color: context.appColors.onSurfaceMuted),
             ),
           ],
         ],
@@ -288,17 +293,17 @@ class MonthlyReportScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
+        color: context.appColors.surfaceCard,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Largest Expenses',
+          Text('Largest Expenses',
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.onSurface)),
+                  color: context.appColors.onSurface)),
           const SizedBox(height: 12),
           ...top.asMap().entries.map((e) {
             final t = e.value;
@@ -317,16 +322,17 @@ class MonthlyReportScreen extends ConsumerWidget {
                           t.description.isEmpty
                               ? t.categoryName
                               : t.description,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
-                              color: AppTheme.onSurface),
+                              color: context.appColors.onSurface),
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           '${t.categoryName} · ${AppUtils.formatDate(t.date)}',
-                          style: const TextStyle(
-                              fontSize: 11, color: AppTheme.onSurfaceMuted),
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: context.appColors.onSurfaceMuted),
                         ),
                       ],
                     ),

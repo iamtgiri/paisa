@@ -115,7 +115,7 @@ class TransactionTile extends ConsumerWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceCard,
+            color: context.appColors.surfaceCard,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Row(
@@ -146,12 +146,12 @@ class TransactionTile extends ConsumerWidget {
                               ?.copyWith(fontSize: 11),
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6),
                         Container(
                           width: 3,
                           height: 3,
-                          decoration: const BoxDecoration(
-                            color: AppTheme.onSurfaceMuted,
+                          decoration: BoxDecoration(
+                            color: context.appColors.onSurfaceMuted,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -180,14 +180,14 @@ class TransactionTile extends ConsumerWidget {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 6, vertical: 1),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.surfaceCard2,
+                                    color: context.appColors.surfaceCard2,
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
                                     '#$tag',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 9,
-                                      color: AppTheme.onSurfaceMuted,
+                                      color: context.appColors.onSurfaceMuted,
                                     ),
                                   ),
                                 ))
@@ -202,20 +202,21 @@ class TransactionTile extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   AmountText(amount: t.amount, type: t.type, fontSize: 14),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         AppUtils.transactionPaymentIcon(t, accounts),
                         size: 10,
-                        color: AppTheme.onSurfaceMuted,
+                        color: context.appColors.onSurfaceMuted,
                       ),
-                      const SizedBox(width: 3),
+                      SizedBox(width: 3),
                       Text(
                         AppUtils.transactionPaymentLabel(t, accounts),
-                        style: const TextStyle(
-                            fontSize: 10, color: AppTheme.onSurfaceMuted),
+                        style: TextStyle(
+                            fontSize: 10,
+                            color: context.appColors.onSurfaceMuted),
                       ),
                     ],
                   ),
@@ -280,10 +281,10 @@ class SummaryCard extends StatelessWidget {
           Row(
             children: [
               Icon(icon, size: 14, color: color),
-              const SizedBox(width: 6),
+              SizedBox(width: 6),
               Text(label,
-                  style: const TextStyle(
-                      fontSize: 11, color: AppTheme.onSurfaceMuted)),
+                  style: TextStyle(
+                      fontSize: 11, color: context.appColors.onSurfaceMuted)),
             ],
           ),
           const SizedBox(height: 6),
@@ -330,10 +331,11 @@ class EmptyState extends StatelessWidget {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: AppTheme.surfaceCard2,
+                color: context.appColors.surfaceCard2,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 32, color: AppTheme.onSurfaceMuted),
+              child:
+                  Icon(icon, size: 32, color: context.appColors.onSurfaceMuted),
             ),
             const SizedBox(height: 16),
             Text(title, style: Theme.of(context).textTheme.titleMedium),
@@ -365,11 +367,11 @@ class LoadingList extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: 6,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      separatorBuilder: (_, __) => SizedBox(height: 8),
       itemBuilder: (_, __) => Container(
         height: 72,
         decoration: BoxDecoration(
-          color: AppTheme.surfaceCard,
+          color: context.appColors.surfaceCard,
           borderRadius: BorderRadius.circular(14),
         ),
       ),
@@ -394,7 +396,7 @@ class SectionHeader extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppTheme.onSurfaceMuted,
+                  color: context.appColors.onSurfaceMuted,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.8,
@@ -426,10 +428,12 @@ class CategoryChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: selected ? color.withOpacity(0.2) : AppTheme.surfaceCard2,
+          color: selected
+              ? color.withOpacity(0.2)
+              : context.appColors.surfaceCard2,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: selected ? color : Colors.transparent,
@@ -442,15 +446,15 @@ class CategoryChip extends StatelessWidget {
             Icon(
               AppUtils.iconFromHex(category.icon),
               size: 13,
-              color: selected ? color : AppTheme.onSurfaceMuted,
+              color: selected ? color : context.appColors.onSurfaceMuted,
             ),
-            const SizedBox(width: 5),
+            SizedBox(width: 5),
             Text(
               category.name,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-                color: selected ? color : AppTheme.onSurfaceMuted,
+                color: selected ? color : context.appColors.onSurfaceMuted,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -487,7 +491,7 @@ class BudgetProgressBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: progress,
-            backgroundColor: AppTheme.surfaceCard2,
+            backgroundColor: context.appColors.surfaceCard2,
             valueColor: AlwaysStoppedAnimation<Color>(barColor),
             minHeight: 7,
           ),
@@ -498,8 +502,8 @@ class BudgetProgressBar extends StatelessWidget {
           children: [
             Text(
               '${AppUtils.formatAmount(spent, compact: true)} of ${AppUtils.formatAmount(limit, compact: true)}',
-              style:
-                  const TextStyle(fontSize: 11, color: AppTheme.onSurfaceMuted),
+              style: TextStyle(
+                  fontSize: 11, color: context.appColors.onSurfaceMuted),
             ),
             Text(
               isOver
@@ -507,7 +511,9 @@ class BudgetProgressBar extends StatelessWidget {
                   : '${AppUtils.formatAmount(limit - spent, compact: true)} left',
               style: TextStyle(
                 fontSize: 11,
-                color: isOver ? AppTheme.expense : AppTheme.onSurfaceMuted,
+                color: isOver
+                    ? AppTheme.expense
+                    : context.appColors.onSurfaceMuted,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -570,10 +576,10 @@ class _ShimmerBoxState extends State<ShimmerBox>
           gradient: LinearGradient(
             begin: Alignment(_anim.value - 1, 0),
             end: Alignment(_anim.value, 0),
-            colors: const [
-              AppTheme.surfaceCard,
-              AppTheme.surfaceCard2,
-              AppTheme.surfaceCard,
+            colors: [
+              context.appColors.surfaceCard,
+              context.appColors.surfaceCard2,
+              context.appColors.surfaceCard,
             ],
             stops: const [0.0, 0.5, 1.0],
           ),

@@ -4,13 +4,18 @@ All notable changes to Paisa are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
-## [1.2.2+9] - Unreleased
+## [1.2.2+10] - Unreleased
 
 ### Fixed
 
 - Stabilized Android validation and release automation.
 - Removed redundant workflow branches after integrating their changes into `main`.
 - Added explicit CMake 3.22.1 provisioning with retries for Android CI builds.
+
+### Changed
+
+- Reworked light-theme surfaces, text, dividers, inputs, cards, navigation, dialogs, and shared widgets to use a coordinated light palette.
+- Kept the existing dark theme palette unchanged.
 
 ### Added
 
