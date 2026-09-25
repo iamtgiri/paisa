@@ -20,7 +20,7 @@ Exported backups can contain sensitive financial information. Store them securel
 
 ## Current Release
 
-The next release is **1.2.2** with Android build number **8**. See [CHANGELOG.md](CHANGELOG.md) for release notes and [docs/RELEASE_PROCESS.md](docs/RELEASE_PROCESS.md) for versioning rules.
+The next release is **1.2.2** with Android build number **9**. See [CHANGELOG.md](CHANGELOG.md) for release notes and [docs/RELEASE_PROCESS.md](docs/RELEASE_PROCESS.md) for versioning rules.
 
 ## Requirements
 
