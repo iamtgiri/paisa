@@ -4,6 +4,12 @@ All notable changes to Paisa are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.2.1+6] - 2026-09-25
+
+### Fixed
+
+- Updated the Android SDK setup action used by validation and release workflows.
+
 ## [1.2.1+5] - 2026-09-25
 
 ### Added
