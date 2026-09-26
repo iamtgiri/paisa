@@ -64,6 +64,26 @@ jobs:
       - name: Run tests
         run: flutter test
 
+      - name: Configure stable Android release signing
+        env:
+          PAISA_KEYSTORE_BASE64: ${{ secrets.PAISA_KEYSTORE_BASE64 }}
+          PAISA_KEYSTORE_PASSWORD: ${{ secrets.PAISA_KEYSTORE_PASSWORD }}
+          PAISA_KEY_ALIAS: ${{ secrets.PAISA_KEY_ALIAS }}
+          PAISA_KEY_PASSWORD: ${{ secrets.PAISA_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          test -n "$PAISA_KEYSTORE_BASE64" || { echo "Missing PAISA_KEYSTORE_BASE64"; exit 1; }
+          test -n "$PAISA_KEYSTORE_PASSWORD" || { echo "Missing PAISA_KEYSTORE_PASSWORD"; exit 1; }
+          test -n "$PAISA_KEY_ALIAS" || { echo "Missing PAISA_KEY_ALIAS"; exit 1; }
+          test -n "$PAISA_KEY_PASSWORD" || { echo "Missing PAISA_KEY_PASSWORD"; exit 1; }
+          printf '%s' "$PAISA_KEYSTORE_BASE64" | base64 --decode > android/paisa-upload.jks
+          cat > android/key.properties <<EOF
+          storeFile=paisa-upload.jks
+          storePassword=$PAISA_KEYSTORE_PASSWORD
+          keyAlias=$PAISA_KEY_ALIAS
+          keyPassword=$PAISA_KEY_PASSWORD
+          EOF
+
       - name: Build release APK
         run: flutter build apk --release
 
@@ -72,3 +92,8 @@ jobs:
         with:
           generate_release_notes: true
           files: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Remove signing material
+        if: always()
+        shell: bash
+        run: rm -f android/key.properties android/paisa-upload.jks

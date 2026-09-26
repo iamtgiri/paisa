@@ -35,6 +35,8 @@ migrate_working_dir/
 
 # Local machine and generated configuration
 android/local.properties
+android/key.properties
+android/*.jks
 **/Generated.xcconfig
 **/ephemeral/
 .env

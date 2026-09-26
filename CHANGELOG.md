@@ -4,7 +4,7 @@ All notable changes to Paisa are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
-## [1.2.2+12] - Unreleased
+## [1.2.2+13] - Unreleased
 
 ### Fixed
 
@@ -18,6 +18,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Kept the existing dark theme palette unchanged.
 - Added independent daily, weekly, and monthly local spending report notifications with previous-period comparisons.
 - Weekly reports now run only on Sunday night or Monday catch-up; monthly reports run only on the final night of the month or first-day catch-up.
+- Added stable Android release signing support for local builds and GitHub Actions releases.
 
 ### Added
 

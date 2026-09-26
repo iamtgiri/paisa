@@ -22,6 +22,40 @@ The semantic version communicates compatibility. The build number identifies a d
 
 For every published build, increase the build number: `+3` -> `+4`. A build-number-only increment is appropriate for a rebuild with no semantic product change. Never reuse a published build number.
 
+## Android Signing
+
+Every published APK must use the same private release keystore. Do not use the Android debug keystore for public releases: GitHub-hosted runners create a different debug certificate on different runs, which prevents users from installing updates.
+
+Create the release keystore once and store it outside the repository:
+
+```powershell
+keytool -genkeypair -v `
+   -keystore paisa-upload.jks `
+   -alias paisa `
+   -keyalg RSA `
+   -keysize 2048 `
+   -validity 10000
+```
+
+Add these repository Actions secrets under **Settings -> Secrets and variables -> Actions**:
+
+| Secret | Value |
+| --- | --- |
+| `PAISA_KEYSTORE_BASE64` | Base64 contents of `paisa-upload.jks` |
+| `PAISA_KEYSTORE_PASSWORD` | Keystore password |
+| `PAISA_KEY_ALIAS` | `paisa` |
+| `PAISA_KEY_PASSWORD` | Key password |
+
+On PowerShell, copy the keystore as one-line Base64 for the first secret:
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes('.\paisa-upload.jks')) | Set-Clipboard
+```
+
+The tagged release workflow refuses to build when these secrets are missing. It writes temporary signing material only inside the runner and removes it after the build.
+
+The first stable-key release cannot update an app installed from a differently signed debug APK. Export the user's Paisa backup, uninstall the old debug-signed app once, and install the first stable release. Every later release will update normally.
+
 ## Release Checklist
 
 1. Review the changes since the previous tag and decide patch, minor, or major scope.
