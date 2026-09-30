@@ -50,7 +50,7 @@ class NotificationService {
       final start = today.subtract(const Duration(days: 1));
       await _checkReport(
         id: 4001,
-        title: 'Daily spending report',
+        title: '📊 Daily spending report',
         periodKey: _dateKey(start),
         lastPeriod: prefs.lastDailyReportPeriod,
         start: start,
@@ -76,7 +76,7 @@ class NotificationService {
             : currentWeekStart;
         await _checkReport(
           id: 4002,
-          title: 'Weekly spending report',
+          title: '📊 Weekly spending report',
           periodKey: _dateKey(start),
           lastPeriod: prefs.lastWeeklyReportPeriod,
           start: start,
@@ -102,7 +102,7 @@ class NotificationService {
             : currentMonthStart;
         await _checkReport(
           id: 4003,
-          title: 'Monthly spending report',
+          title: '📊 Monthly spending report',
           periodKey: _dateKey(start),
           lastPeriod: prefs.lastMonthlyReportPeriod,
           start: start,
@@ -130,10 +130,11 @@ class NotificationService {
 
     final current = await _getSummary(start, end);
     final previous = await _getSummary(previousStart, previousEnd);
+    final topCategory = await _getTopCategory(start, end);
     await _show(
       id: id,
       title: title,
-      body: _reportBody(current, previous),
+      body: _reportBody(current, previous, topCategory),
       channel: _channelId,
       channelName: _channelName,
     );
@@ -158,16 +159,44 @@ class NotificationService {
     return (income: income, expense: expense);
   }
 
-  String _reportBody(({double income, double expense}) current,
-      ({double income, double expense}) previous) {
+  Future<({String name, double amount})?> _getTopCategory(
+      DateTime start, DateTime end) async {
+    final transactions = await IsarService.instance.getTransactionsByDateRange(
+      start,
+      end.subtract(const Duration(milliseconds: 1)),
+    );
+    final totals = <String, double>{};
+    for (final t in transactions) {
+      if (!t.isExpense) continue;
+      totals[t.categoryName] = (totals[t.categoryName] ?? 0) + t.amount;
+    }
+    if (totals.isEmpty) return null;
+    final top = totals.entries.reduce((a, b) => a.value > b.value ? a : b);
+    return (name: top.key, amount: top.value);
+  }
+
+  String _reportBody(
+    ({double income, double expense}) current,
+    ({double income, double expense}) previous,
+    ({String name, double amount})? topCategory,
+  ) {
     final change = current.expense - previous.expense;
     final comparison = previous.expense == 0
         ? current.expense == 0
             ? 'same as previous period'
             : 'no spending in previous period'
         : '${change.abs() / previous.expense * 100 >= 1 ? (change.abs() / previous.expense * 100).toStringAsFixed(0) : '<1'}% ${change > 0 ? 'higher' : change < 0 ? 'lower' : 'same'}';
-    return 'Spent ${AppUtils.formatAmount(current.expense, compact: true)} · '
-        '$comparison · income ${AppUtils.formatAmount(current.income, compact: true)}';
+    final net = current.income - current.expense;
+    final netLabel = net >= 0
+        ? 'Net +${AppUtils.formatAmount(net, compact: true)}'
+        : 'Net -${AppUtils.formatAmount(net.abs(), compact: true)}';
+    final topLabel = topCategory == null
+        ? ''
+        : ' · Top: ${topCategory.name} ${AppUtils.formatAmount(topCategory.amount, compact: true)}';
+
+    return 'Spent ${AppUtils.formatAmount(current.expense, compact: true)} '
+        '($comparison) · Income ${AppUtils.formatAmount(current.income, compact: true)}\n'
+        '$netLabel$topLabel';
   }
 
   String _dateKey(DateTime date) => '${date.year.toString().padLeft(4, '0')}-'
@@ -260,6 +289,7 @@ class NotificationService {
         importance: Importance.high,
         priority: Priority.high,
         showWhen: true,
+        styleInformation: BigTextStyleInformation(body),
       ),
     );
     await _plugin.show(id, title, body, details);

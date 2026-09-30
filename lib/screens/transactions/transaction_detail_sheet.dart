@@ -223,10 +223,45 @@ class TransactionDetailSheet extends ConsumerWidget {
       ),
     );
     if (confirm == true) {
-      await ref.read(accountsProvider.notifier).reverseTransaction(transaction);
-      await IsarService.instance.deleteTransaction(transaction.id);
-      ref.read(transactionsRefreshProvider.notifier).refresh();
-      if (context.mounted) Navigator.pop(context);
+      final transactionNotifier =
+          ref.read(transactionsRefreshProvider.notifier);
+      final accountsNotifier = ref.read(accountsProvider.notifier);
+      final messenger = ScaffoldMessenger.of(context);
+      await transactionNotifier.deleteWithBalance(
+        transaction: transaction,
+        accounts: accountsNotifier,
+      );
+      if (!context.mounted) return;
+
+      Navigator.pop(context);
+      messenger.showSnackBar(
+        SnackBar(
+          content: const Text('Transaction deleted'),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () async {
+              final restored = Transaction.create(
+                amount: transaction.amount,
+                categoryId: transaction.categoryId,
+                categoryName: transaction.categoryName,
+                categoryColor: transaction.categoryColor,
+                categoryIcon: transaction.categoryIcon,
+                date: transaction.date,
+                description: transaction.description,
+                paymentAccountId: transaction.paymentAccountId,
+                paymentMethod: transaction.paymentMethod,
+                type: transaction.type,
+                tags: List.from(transaction.tags),
+                isFavorite: transaction.isFavorite,
+              );
+              await transactionNotifier.saveWithBalance(
+                next: restored,
+                accounts: accountsNotifier,
+              );
+            },
+          ),
+        ),
+      );
     }
   }
 
@@ -247,9 +282,10 @@ class TransactionDetailSheet extends ConsumerWidget {
       tags: List.from(t.tags),
       isFavorite: t.isFavorite,
     );
-    await IsarService.instance.saveTransaction(dup);
-    await ref.read(accountsProvider.notifier).applyTransaction(dup);
-    ref.read(transactionsRefreshProvider.notifier).refresh();
+    await ref.read(transactionsRefreshProvider.notifier).saveWithBalance(
+          next: dup,
+          accounts: ref.read(accountsProvider.notifier),
+        );
     if (context.mounted) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(

@@ -21,6 +21,9 @@ import '../../models/transaction.dart';
 import '../../providers/providers.dart';
 import '../../screens/accounts/accounts_screen.dart';
 import '../../screens/reports/monthly_report_screen.dart';
+import '../../screens/transactions/pending_transactions_screen.dart';
+import '../../services/backup_service.dart';
+import '../../services/notification_capture_service.dart';
 import '../../services/notification_service.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/app_utils.dart';
@@ -36,6 +39,7 @@ class SettingsScreen extends ConsumerWidget {
     final limit = ref.watch(spendingLimitProvider);
     final themeMode = ref.watch(themeModeProvider);
     final notifEnabled = ref.watch(notificationsEnabledProvider);
+    final pendingCount = ref.watch(pendingTransactionsProvider).length;
     final currency = AppPrefs.instance.currencySymbol;
     final currencyPrefix = AppPrefs.instance.currencyPrefix;
     final currencyDecimals = AppPrefs.instance.currencyDecimals;
@@ -154,6 +158,14 @@ class SettingsScreen extends ConsumerWidget {
               AppTheme.primary,
               () => _showCurrencySheet(context, ref),
             ),
+            _tileWithTrailing(
+              context,
+              Icons.notifications_active_outlined,
+              'Automatic transaction capture',
+              'Optional: read bank notifications on this device only',
+              const Color(0xFFFF9800),
+              _NotificationCaptureToggle(),
+            ),
           ]),
           const SizedBox(height: 16),
           _section(context, 'SECURITY', [
@@ -170,6 +182,15 @@ class SettingsScreen extends ConsumerWidget {
           ]),
           const SizedBox(height: 16),
           _section(context, 'DATA', [
+            _tile(
+              context,
+              Icons.pending_actions_outlined,
+              'Pending Transactions',
+              pendingCount == 0
+                ? 'Review captured bank notifications'
+                : '$pendingCount notification${pendingCount == 1 ? '' : 's'} waiting for review',
+              const Color(0xFFFF9800),
+              () => _push(context, const PendingTransactionsScreen())),
             _tile(
                 context,
                 Icons.upload_outlined,
@@ -191,13 +212,6 @@ class SettingsScreen extends ConsumerWidget {
                 'Restore from a previous backup',
                 Color(0xFFFF6B6B),
                 () => _importJson(context, ref)),
-            _tile(
-                context,
-                Icons.category_outlined,
-                'Add Missing Categories',
-                'Add newly available default categories',
-                context.appColors.onSurfaceMuted,
-                () => _reseedCategories(context, ref)),
           ]),
           SizedBox(height: 16),
           _section(context, 'INFO', [
@@ -205,7 +219,7 @@ class SettingsScreen extends ConsumerWidget {
                 context,
                 Icons.info_outline,
                 'About Paisa',
-                'Version 1.2.0 — Personal finance tracker',
+                'Version 2.0.0 — Personal finance tracker',
                 context.appColors.onSurfaceMuted,
                 () => _showAbout(context)),
           ]),
@@ -317,8 +331,8 @@ class SettingsScreen extends ConsumerWidget {
           }
 
           return Container(
-            decoration: const BoxDecoration(
-              color: AppTheme.surfaceCard,
+            decoration: BoxDecoration(
+              color: sheetContext.appColors.surfaceCard,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             padding: EdgeInsets.fromLTRB(
@@ -623,6 +637,117 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
+  void _validateBackupData(Map<String, dynamic> data) {
+    if (data['version'] is! int || data['version'] != 2) {
+      throw const FormatException('Unsupported backup version');
+    }
+
+    const listKeys = [
+      'accounts',
+      'transfers',
+      'transactions',
+      'categories',
+      'budgets',
+      'savingsGoals',
+      'recurringTransactions',
+    ];
+    for (final key in listKeys) {
+      if (data[key] is! List) {
+        throw FormatException('Backup field "$key" is missing or invalid');
+      }
+    }
+
+    final preferences = data['preferences'];
+    if (preferences != null && preferences is! Map<String, dynamic>) {
+      throw const FormatException('Backup preferences are invalid');
+    }
+
+    for (final raw in data['accounts'] as List) {
+      try {
+        Account.fromJson(Map<String, dynamic>.from(raw as Map));
+      } catch (_) {
+        throw const FormatException('Backup contains an invalid account');
+      }
+    }
+
+    for (final raw in data['transfers'] as List) {
+      try {
+        AccountTransfer.fromJson(Map<String, dynamic>.from(raw as Map));
+      } catch (_) {
+        throw const FormatException('Backup contains an invalid transfer');
+      }
+    }
+
+    for (final raw in data['transactions'] as List) {
+      final transaction = Map<String, dynamic>.from(raw as Map);
+      if (transaction['amount'] is! num ||
+          transaction['categoryId'] is! int ||
+          transaction['date'] is! String ||
+          transaction['description'] is! String) {
+        throw const FormatException('Backup contains an invalid transaction');
+      }
+      try {
+        DateTime.parse(transaction['date'] as String);
+        final paymentMethod = transaction['paymentMethod'] as int;
+        final type = transaction['type'] as int;
+        if (paymentMethod < 0 || paymentMethod >= PaymentMethod.values.length) {
+          throw const FormatException('Invalid payment method');
+        }
+        if (type < 0 || type >= TransactionType.values.length) {
+          throw const FormatException('Invalid transaction type');
+        }
+      } catch (_) {
+        throw const FormatException('Backup contains an invalid transaction');
+      }
+    }
+
+    for (final raw in data['categories'] as List) {
+      final category = Map<String, dynamic>.from(raw as Map);
+      if (category['name'] is! String ||
+          category['colorValue'] is! int ||
+          category['icon'] is! String ||
+          category['isExpense'] is! bool) {
+        throw const FormatException('Backup contains an invalid category');
+      }
+    }
+
+    for (final raw in data['recurringTransactions'] as List) {
+      final recurring = Map<String, dynamic>.from(raw as Map);
+      if (recurring['amount'] is! num ||
+          recurring['categoryId'] is! int ||
+          recurring['title'] is! String ||
+          recurring['frequency'] is! int ||
+          recurring['nextDueDate'] is! String) {
+        throw const FormatException(
+            'Backup contains an invalid recurring transaction');
+      }
+      try {
+        DateTime.parse(recurring['nextDueDate'] as String);
+        final frequency = recurring['frequency'] as int;
+        if (frequency < 0 || frequency >= RecurringFrequency.values.length) {
+          throw const FormatException('Invalid recurring frequency');
+        }
+      } catch (_) {
+        throw const FormatException(
+            'Backup contains an invalid recurring transaction');
+      }
+    }
+  }
+
+  Future<String> _createLocalSafetyBackup(WidgetRef ref) async {
+    final data = await BackupService.buildData(
+      accounts: ref.read(accountsProvider),
+      transfers: ref.read(transfersProvider),
+    );
+    final dir = await getApplicationDocumentsDirectory();
+    final backupDir = Directory('${dir.path}/paisa_backups');
+    await backupDir.create(recursive: true);
+    final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+    final file = File('${backupDir.path}/paisa_safety_$timestamp.json');
+    await file.writeAsString(const JsonEncoder.withIndent('  ').convert(data));
+    return file.path;
+  }
+
   Future<void> _importJson(BuildContext context, WidgetRef ref) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -653,6 +778,8 @@ class SettingsScreen extends ConsumerWidget {
       final file = File(result.files.single.path!);
       final content = await file.readAsString();
       final data = json.decode(content) as Map<String, dynamic>;
+      _validateBackupData(data);
+      await _createLocalSafetyBackup(ref);
 
       await IsarService.instance.clearUserData();
 
@@ -676,14 +803,16 @@ class SettingsScreen extends ConsumerWidget {
 
       // Import transactions
       final txns = data['transactions'] as List? ?? [];
+      DateTime? latestTransactionDate;
       for (final t in txns) {
+        final txnDate = DateTime.parse(t['date'] as String);
         final txn = Transaction.create(
           amount: (t['amount'] as num).toDouble(),
           categoryId: t['categoryId'] as int,
           categoryName: t['categoryName'] as String,
           categoryColor: t['categoryColor'] as int,
           categoryIcon: t['categoryIcon'] as String,
-          date: DateTime.parse(t['date'] as String),
+          date: txnDate,
           description: t['description'] as String,
           paymentAccountId: t['paymentAccountId'] as String?,
           paymentMethod: PaymentMethod.values[t['paymentMethod'] as int],
@@ -695,6 +824,10 @@ class SettingsScreen extends ConsumerWidget {
             : null;
         if (t['id'] is int) txn.id = t['id'] as int;
         await IsarService.instance.saveTransaction(txn);
+        if (latestTransactionDate == null ||
+            txnDate.isAfter(latestTransactionDate)) {
+          latestTransactionDate = txnDate;
+        }
       }
 
       final budgets = data['budgets'] as List? ?? [];
@@ -787,6 +920,16 @@ class SettingsScreen extends ConsumerWidget {
       ref.read(budgetsRefreshProvider.notifier).refresh();
       ref.read(savingsRefreshProvider.notifier).refresh();
       ref.read(recurringRefreshProvider.notifier).refresh();
+
+      // Jump the month view to the imported data so it isn't hidden behind
+      // "this month" when the backup is from a different month than today.
+      if (latestTransactionDate != null) {
+        final now = DateTime.now();
+        final target = latestTransactionDate.isAfter(now)
+            ? SelectedMonth(now.year, now.month)
+            : SelectedMonth(latestTransactionDate.year, latestTransactionDate.month);
+        ref.read(selectedMonthProvider.notifier).state = target;
+      }
 
       if (context.mounted) {
         _snack(context,
@@ -938,20 +1081,6 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _reseedCategories(BuildContext context, WidgetRef ref) async {
-    final added = await IsarService.instance.reseedMissingDefaults();
-    ref.invalidate(categoriesProvider);
-    ref.invalidate(expenseCategoriesProvider);
-    ref.invalidate(incomeCategoriesProvider);
-    if (context.mounted) {
-      _snack(
-          context,
-          added > 0
-              ? 'Added $added new categories'
-              : 'All categories are already up to date');
-    }
-  }
-
   void _showAbout(BuildContext context) {
     showDialog(
       context: context,
@@ -976,7 +1105,7 @@ class SettingsScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Version 1.2.0',
+            Text('Version 2.0.0',
                 style: TextStyle(
                     fontSize: 12, color: context.appColors.onSurfaceMuted)),
             const SizedBox(height: 16),
@@ -1054,6 +1183,55 @@ class SettingsScreen extends ConsumerWidget {
   void _snack(BuildContext context, String msg) {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+}
+
+class _NotificationCaptureToggle extends StatefulWidget {
+  const _NotificationCaptureToggle();
+
+  @override
+  State<_NotificationCaptureToggle> createState() =>
+      _NotificationCaptureToggleState();
+}
+
+class _NotificationCaptureToggleState
+    extends State<_NotificationCaptureToggle> {
+  late bool _enabled;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _enabled = AppPrefs.instance.notificationCaptureEnabled;
+  }
+
+  Future<void> _change(bool enabled) async {
+    setState(() {
+      _enabled = enabled;
+      _saving = true;
+    });
+    final service = NotificationCaptureService();
+    try {
+      await AppPrefs.instance.setNotificationCaptureEnabled(enabled);
+      await service.setEnabled(enabled);
+      if (!enabled) {
+        await service.clearCaptured();
+      } else {
+        await service.openAccessSettings();
+      }
+    } catch (_) {
+      if (mounted) setState(() => _enabled = false);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Switch(
+      value: _enabled,
+      onChanged: _saving ? null : _change,
+    );
   }
 }
 
@@ -1956,10 +2134,12 @@ class RecurringScreen extends ConsumerWidget {
                       ? TransactionType.expense
                       : TransactionType.income,
                 );
-                await IsarService.instance.saveTransaction(txn);
+                await ref.read(transactionsRefreshProvider.notifier).saveWithBalance(
+                      next: txn,
+                      accounts: ref.read(accountsProvider.notifier),
+                    );
                 r.nextDueDate = r.computeNextDue();
                 await IsarService.instance.saveRecurring(r);
-                ref.read(transactionsRefreshProvider.notifier).refresh();
                 ref.read(recurringRefreshProvider.notifier).refresh();
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -2270,6 +2450,43 @@ class _RecurringFormSheetState extends ConsumerState<_RecurringFormSheet> {
                       ))
                   .toList(),
             ),
+            const SizedBox(height: 16),
+            // Next due date
+            _label('NEXT DUE DATE'),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: _pickNextDue,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 14),
+                decoration: BoxDecoration(
+                  color: context.appColors.surfaceCard2,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: context.appColors.divider),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.calendar_today_outlined,
+                        size: 16, color: context.appColors.onSurfaceMuted),
+                    const SizedBox(width: 10),
+                    Text(DateFormat('EEE, d MMM yyyy').format(_nextDue),
+                        style: TextStyle(
+                            fontSize: 13, color: context.appColors.onSurface)),
+                    const Spacer(),
+                    Icon(Icons.chevron_right,
+                        size: 18, color: context.appColors.onSurfaceMuted),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'e.g. SIP on the 3rd, rent on the 5th — future occurrences '
+              'reuse this day of the month.',
+              style: TextStyle(
+                  fontSize: 11, color: context.appColors.onSurfaceMuted),
+            ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _saving ? null : _save,
@@ -2293,6 +2510,16 @@ class _RecurringFormSheetState extends ConsumerState<_RecurringFormSheet> {
           fontWeight: FontWeight.w700,
           color: context.appColors.onSurfaceMuted,
           letterSpacing: 0.8));
+
+  Future<void> _pickNextDue() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _nextDue,
+      firstDate: DateTime.now().subtract(const Duration(days: 1)),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
+    );
+    if (picked != null) setState(() => _nextDue = picked);
+  }
 
   Widget _typeBtn(bool isExp, String label, Color color) {
     final sel = _isExpense == isExp;

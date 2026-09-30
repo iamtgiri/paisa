@@ -462,9 +462,10 @@ class DashboardScreen extends ConsumerWidget {
         tags: List.from(fav.tags),
         isFavorite: false,
       );
-      await IsarService.instance.saveTransaction(newTxn);
-      await ref.read(accountsProvider.notifier).applyTransaction(newTxn);
-      ref.read(transactionsRefreshProvider.notifier).refresh();
+      await ref.read(transactionsRefreshProvider.notifier).saveWithBalance(
+            next: newTxn,
+            accounts: ref.read(accountsProvider.notifier),
+          );
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Transaction added!')),

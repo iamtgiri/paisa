@@ -360,14 +360,18 @@ class MonthlyReportScreen extends ConsumerWidget {
   ) async {
     final summary = await ref.read(monthlySummaryProvider.future);
     final expTotals = await ref.read(expenseCategoryTotalsProvider.future);
+    final incTotals = await ref.read(incomeCategoryTotalsProvider.future);
     final topExpenses = await ref.read(topExpensesProvider.future);
     final budgets = await ref.read(monthlyBudgetsProvider.future);
+    final trend = await ref.read(monthlyTrendProvider.future);
     final text = _buildReportText(
       sm: sm,
       summary: summary,
       expenseTotals: expTotals,
+      incomeTotals: incTotals,
       topExpenses: topExpenses,
       budgets: budgets,
+      trend: trend,
     );
     final dir = await getTemporaryDirectory();
     final file = File(
@@ -386,14 +390,18 @@ class MonthlyReportScreen extends ConsumerWidget {
       BuildContext context, WidgetRef ref, SelectedMonth sm) async {
     final summary = await ref.read(monthlySummaryProvider.future);
     final expTotals = await ref.read(expenseCategoryTotalsProvider.future);
+    final incTotals = await ref.read(incomeCategoryTotalsProvider.future);
     final topExpenses = await ref.read(topExpensesProvider.future);
     final budgets = await ref.read(monthlyBudgetsProvider.future);
+    final trend = await ref.read(monthlyTrendProvider.future);
     final text = _buildReportText(
       sm: sm,
       summary: summary,
       expenseTotals: expTotals,
+      incomeTotals: incTotals,
       topExpenses: topExpenses,
       budgets: budgets,
+      trend: trend,
     );
     await Clipboard.setData(ClipboardData(text: text));
     if (context.mounted) {
@@ -407,8 +415,10 @@ class MonthlyReportScreen extends ConsumerWidget {
     required SelectedMonth sm,
     required ({double income, double expense, int count}) summary,
     required Map<String, double> expenseTotals,
+    required Map<String, double> incomeTotals,
     required List<Transaction> topExpenses,
     required List<Budget> budgets,
+    required List<({int year, int month, double expense, double income})> trend,
   }) {
     final balance = summary.income - summary.expense;
     final savings = summary.income > 0
@@ -421,38 +431,79 @@ class MonthlyReportScreen extends ConsumerWidget {
       spendingLimit: budgets.isEmpty
           ? null
           : budgets.fold<double>(0, (sum, budget) => sum + budget.limitAmount),
+      historicalMonthlyExpenses: trend.length > 1
+          ? trend.sublist(0, trend.length - 1).map((t) => t.expense).toList()
+          : const [],
     );
 
-    final categoryLines = (expenseTotals.entries.toList()
-          ..sort((a, b) => b.value.compareTo(a.value)))
-        .map((e) => '- ${e.key}: ${AppUtils.formatAmount(e.value)}')
+    final sortedExpenses = expenseTotals.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final totalExpense = expenseTotals.values.fold<double>(0, (a, b) => a + b);
+    final categoryLines = sortedExpenses.map((e) {
+      final pct = totalExpense > 0 ? e.value / totalExpense * 100 : 0.0;
+      return '  - ${e.key}: ${AppUtils.formatAmount(e.value)} (${pct.toStringAsFixed(0)}%)';
+    }).join('\n');
+
+    final sortedIncome = incomeTotals.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final incomeLines = sortedIncome
+        .map((e) => '  - ${e.key}: ${AppUtils.formatAmount(e.value)}')
         .join('\n');
+
     final expenseLines = topExpenses.take(5).map((t) {
       final label = t.description.isEmpty ? t.categoryName : t.description;
-      return '- $label: ${AppUtils.formatAmount(t.amount)}';
+      return '  - $label: ${AppUtils.formatAmount(t.amount)} (${AppUtils.formatDate(t.date)})';
     }).join('\n');
+
     final budgetText = budgets.isEmpty
-        ? 'No category budgets set'
-        : '${budgets.length} category budget(s), ${AppUtils.formatAmount(budgets.fold<double>(0, (sum, b) => sum + b.limitAmount))} total limit';
+        ? '  No category budgets set'
+        : budgets.map((b) {
+            final spent = expenseTotals[b.categoryName] ?? 0;
+            final pct = b.limitAmount > 0 ? spent / b.limitAmount * 100 : 0.0;
+            return '  - ${b.categoryName}: ${AppUtils.formatAmount(spent, compact: true)} / '
+                '${AppUtils.formatAmount(b.limitAmount, compact: true)} (${pct.toStringAsFixed(0)}%)';
+          }).join('\n');
 
-    return '''Paisa Monthly Report
+    final previousExpense =
+        trend.length > 1 ? trend[trend.length - 2].expense : null;
+    final monthChange = (previousExpense == null || previousExpense == 0)
+        ? 'No data for last month'
+        : () {
+            final diff = summary.expense - previousExpense;
+            final pct = (diff.abs() / previousExpense * 100).toStringAsFixed(0);
+            return diff <= 0
+                ? '$pct% lower than last month'
+                : '$pct% higher than last month';
+          }();
+
+    return '''📊 PAISA MONTHLY REPORT
 ${AppUtils.formatMonthYear(sm.year, sm.month)}
-================================
-Income:       ${AppUtils.formatAmount(summary.income)}
-Expense:      ${AppUtils.formatAmount(summary.expense)}
-Balance:      ${AppUtils.formatAmount(balance)}
-Savings rate: ${savings.toStringAsFixed(1)}%
-Transactions: ${summary.count}
-Daily pace:   ${AppUtils.formatAmount(insight.dailyRate)}/day
-Projection:   ${AppUtils.formatAmount(insight.projectedExpense)} by month end
-Budgets:      $budgetText
+========================================
 
-Spending by category
-$categoryLines
+💰 SUMMARY
+  Income:        ${AppUtils.formatAmount(summary.income)}
+  Expense:       ${AppUtils.formatAmount(summary.expense)}
+  Balance:       ${AppUtils.formatAmount(balance)}
+  Savings rate:  ${savings.toStringAsFixed(1)}%
+  Transactions:  ${summary.count}
+  Vs last month: $monthChange
 
-Largest expenses
-${expenseLines.isEmpty ? '- None' : expenseLines}
+📈 PROJECTION
+  Daily pace:  ${AppUtils.formatAmount(insight.dailyRate)}/day
+  Month-end:   ${AppUtils.formatAmount(insight.projectedExpense)} (projected)
 
-Generated locally by Paisa''';
+📂 SPENDING BY CATEGORY
+${categoryLines.isEmpty ? '  No expenses recorded' : categoryLines}
+
+💵 INCOME BY SOURCE
+${incomeLines.isEmpty ? '  No income recorded' : incomeLines}
+
+🏆 LARGEST EXPENSES
+${expenseLines.isEmpty ? '  None' : expenseLines}
+
+🎯 BUDGETS
+$budgetText
+
+Generated locally by Paisa — no data leaves your device.''';
   }
 }

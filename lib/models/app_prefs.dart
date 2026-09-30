@@ -103,12 +103,29 @@ class AppPrefs {
     await _save();
   }
 
+  // ─── Net worth history (JSON-encoded list) ──────────────────
+  String get netWorthHistoryJson =>
+      (_data['net_worth_history'] as String?) ?? '[]';
+
+  Future<void> setNetWorthHistoryJson(String raw) async {
+    _data['net_worth_history'] = raw;
+    await _save();
+  }
+
   // ─── Notifications enabled ───────────────────────────────────
   bool get notificationsEnabled =>
       (_data['notifications_enabled'] as bool?) ?? true;
 
   Future<void> setNotificationsEnabled(bool value) async {
     _data['notifications_enabled'] = value;
+    await _save();
+  }
+
+  bool get notificationCaptureEnabled =>
+      (_data['notification_capture_enabled'] as bool?) ?? false;
+
+  Future<void> setNotificationCaptureEnabled(bool value) async {
+    _data['notification_capture_enabled'] = value;
     await _save();
   }
 

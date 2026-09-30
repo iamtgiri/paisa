@@ -33,6 +33,7 @@ flutter build apk --release
 - Add or update tests when changing calculations, persistence, filtering, import/export, or release behavior.
 - Keep user-visible copy clear and professional.
 - Do not add network services or telemetry without an explicit privacy review.
+- Changes to the notification-capture feature (Android listener, parsing, pending-transaction review) require extra care: it must stay opt-in, off by default, fully local, and never post a transaction without explicit user confirmation.
 - Update `CHANGELOG.md` for user-visible changes.
 - Update the version in `pubspec.yaml` when preparing a release, according to the documented change level.
 

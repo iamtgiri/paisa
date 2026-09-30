@@ -66,10 +66,17 @@ class RecurringTransaction {
       case RecurringFrequency.monthly:
         final m = nextDueDate.month + 1;
         final y = nextDueDate.year + (m > 12 ? 1 : 0);
-        return DateTime(y, m > 12 ? 1 : m, nextDueDate.day);
+        return _clampToMonth(y, m > 12 ? 1 : m, nextDueDate.day);
       case RecurringFrequency.yearly:
-        return DateTime(
+        return _clampToMonth(
             nextDueDate.year + 1, nextDueDate.month, nextDueDate.day);
     }
+  }
+
+  /// Keeps the due day anchored to month-end instead of overflowing into
+  /// the next month (e.g. day 31 in February becomes the 28th, not March 3rd).
+  static DateTime _clampToMonth(int year, int month, int day) {
+    final lastDayOfMonth = DateTime(year, month + 1, 0).day;
+    return DateTime(year, month, day > lastDayOfMonth ? lastDayOfMonth : day);
   }
 }

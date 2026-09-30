@@ -1,4 +1,5 @@
 import '../models/transaction.dart';
+import 'financial_insights.dart';
 
 class FinancialHealthResult {
   final int score; // 0 to 100
@@ -31,8 +32,9 @@ class FinancialHealthResult {
 }
 
 class FinancialHealthEngine {
-  /// Keywords to classify transactions into 50/30/20 buckets
-  static const Set<String> _needsKeywords = {
+  /// Keywords to classify transactions into 50/30/20 buckets.
+  /// Shown to users via the Financial Health info popup — keep in sync.
+  static const Set<String> needsKeywords = {
     'rent',
     'groceries',
     'electricity',
@@ -53,10 +55,13 @@ class FinancialHealthEngine {
     'mobile',
     'internet',
     'child care',
-    'education'
+    'education',
+    'maintenance',
+    'repairs',
+    'domestic help',
   };
 
-  static const Set<String> _savingsKeywords = {
+  static const Set<String> savingsKeywords = {
     'sip',
     'mutual fund',
     'stocks',
@@ -67,22 +72,21 @@ class FinancialHealthEngine {
     'gold',
     'pension',
     'epf',
-    'ppf'
+    'ppf',
+    'emergency fund',
   };
 
   static FinancialHealthResult analyze({
     required List<Transaction> transactions,
     required double monthlyIncome,
     required double spendingLimit,
+    required DateTime month,
+    List<double> historicalMonthlyExpenses = const [],
   }) {
     double needs = 0;
     double wants = 0;
     double savings = 0;
     double totalExpense = 0;
-
-    final now = DateTime.now();
-    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
-    final currentDay = now.day.clamp(1, daysInMonth);
 
     for (final t in transactions) {
       if (t.isExpense) {
@@ -90,9 +94,9 @@ class FinancialHealthEngine {
         final name = t.categoryName.toLowerCase();
         final desc = t.description.toLowerCase();
 
-        if (_savingsKeywords.any((k) => name.contains(k) || desc.contains(k))) {
+        if (savingsKeywords.any((k) => name.contains(k) || desc.contains(k))) {
           savings += t.amount;
-        } else if (_needsKeywords
+        } else if (needsKeywords
             .any((k) => name.contains(k) || desc.contains(k))) {
           needs += t.amount;
         } else {
@@ -106,9 +110,16 @@ class FinancialHealthEngine {
     final wantsRatio = wants / denominator;
     final savingsRatio = savings / denominator;
 
-    // Daily burn rate & month-end projection
-    final dailyBurnRate = currentDay > 0 ? totalExpense / currentDay : 0.0;
-    final projectedMonthEndExpense = dailyBurnRate * daysInMonth;
+    // Outlier-resistant month-end projection (shared with dashboard/reports).
+    final burnRate = FinancialInsights.calculateBurnRate(
+      expense: totalExpense,
+      month: month,
+      now: DateTime.now(),
+      spendingLimit: spendingLimit > 0 ? spendingLimit : null,
+      historicalMonthlyExpenses: historicalMonthlyExpenses,
+    );
+    final projectedMonthEndExpense = burnRate.projectedExpense;
+    final dailyBurnRate = burnRate.dailyRate;
 
     // Financial Health Score calculation
     double scoreAcc = 0.0;
@@ -129,9 +140,16 @@ class FinancialHealthEngine {
     final wantsPenalty = (wantsRatio - 0.30).clamp(0.0, 0.50);
     scoreAcc += (15.0 - wantsPenalty * 30).clamp(0.0, 15.0);
 
-    // 3. Limit Adherence (up to 30 pts)
-    if (spendingLimit > 0) {
-      final limitUsage = totalExpense / spendingLimit;
+    // 3. Limit Adherence (up to 30 pts) — uses the projected month-end
+    // expense so early-month scores aren't misleadingly optimistic.
+    // Falls back to a soft limit from recent history when no explicit
+    // spending limit is set, instead of a flat default.
+    final effectiveLimit = spendingLimit > 0
+        ? spendingLimit
+        : FinancialInsights.calculateRobustBaseline(historicalMonthlyExpenses)
+            ?.let((baseline) => baseline * 1.15);
+    if (effectiveLimit != null && effectiveLimit > 0) {
+      final limitUsage = projectedMonthEndExpense / effectiveLimit;
       if (limitUsage <= 0.8) {
         scoreAcc += 30.0;
       } else if (limitUsage <= 1.0) {
@@ -177,4 +195,8 @@ class FinancialHealthEngine {
       dailyBurnRate: dailyBurnRate,
     );
   }
+}
+
+extension _Let<T> on T {
+  R let<R>(R Function(T) block) => block(this);
 }

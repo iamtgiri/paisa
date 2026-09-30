@@ -4,7 +4,9 @@
 
 Paisa is an offline-first personal finance application. Financial records are intended to remain on the device unless the user explicitly exports them.
 
-The optional PIN protects access inside the application, but it is not a substitute for Android device security, encrypted storage, or a professionally audited security boundary.
+Paisa includes an optional, off-by-default Android feature that reads notifications (with the user's explicit OS-level permission grant) to locally detect bank transaction messages. All parsing happens on-device using pattern matching; nothing is transmitted anywhere, and the app never posts a transaction automatically — every match must be manually reviewed and confirmed by the user. This feature can be disabled at any time, which also clears any locally queued, unreviewed captures.
+
+The optional PIN protects access inside the application, but it is not a substitute for Android device security, encrypted storage, or a professionally audited security boundary. The PIN is currently stored unhashed in local app preferences.
 
 ## Reporting a Vulnerability
 

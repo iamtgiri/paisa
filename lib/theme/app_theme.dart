@@ -256,12 +256,12 @@ class AppTheme {
   }
 
   static ThemeData lightTheme() {
-    const Color lSurface = Color(0xFFF4F6FA);
+    const Color lSurface = Color(0xFFE7EAF2);
     const Color lCard = Color(0xFFFFFFFF);
-    const Color lCard2 = Color(0xFFECEFF4);
+    const Color lCard2 = Color(0xFFDCE1EB);
     const Color lOnSurface = Color(0xFF1A1F2E);
-    const Color lOnSurfaceMuted = Color(0xFF6B7280);
-    const Color lDivider = Color(0xFFE0E4ED);
+    const Color lOnSurfaceMuted = Color(0xFF5B6472);
+    const Color lDivider = Color(0xFFC9D0DE);
 
     return ThemeData(
       useMaterial3: true,
@@ -270,8 +270,8 @@ class AppTheme {
         primary: primary,
         secondary: secondary,
         surface: lSurface,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
+        onPrimary: Colors.black,
+        onSecondary: Colors.black,
         onSurface: lOnSurface,
         outline: lDivider,
       ),
@@ -289,6 +289,10 @@ class AppTheme {
       textTheme: GoogleFonts.dmSansTextTheme(
         ThemeData.light().textTheme,
       ).copyWith(
+        displayLarge: GoogleFonts.spaceGrotesk(
+            color: lOnSurface, fontWeight: FontWeight.w700, fontSize: 36),
+        displayMedium: GoogleFonts.spaceGrotesk(
+            color: lOnSurface, fontWeight: FontWeight.w700, fontSize: 28),
         displaySmall: GoogleFonts.spaceGrotesk(
             color: lOnSurface, fontWeight: FontWeight.w700, fontSize: 22),
         titleLarge: GoogleFonts.dmSans(
@@ -302,14 +306,21 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: lCard,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 2,
+        shadowColor: lOnSurface.withOpacity(0.12),
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: lDivider),
+        ),
         margin: EdgeInsets.zero,
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: lSurface,
         elevation: 0,
-        scrolledUnderElevation: 0,
+        scrolledUnderElevation: 2,
+        shadowColor: lOnSurface.withOpacity(0.12),
+        surfaceTintColor: Colors.transparent,
         centerTitle: false,
         titleTextStyle: GoogleFonts.spaceGrotesk(
             color: lOnSurface, fontWeight: FontWeight.w700, fontSize: 20),
@@ -320,7 +331,7 @@ class AppTheme {
         selectedItemColor: primary,
         unselectedItemColor: lOnSurfaceMuted,
         type: BottomNavigationBarType.fixed,
-        elevation: 0,
+        elevation: 8,
         showSelectedLabels: true,
         showUnselectedLabels: true,
         selectedLabelStyle:
@@ -347,7 +358,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
-          foregroundColor: Colors.white,
+          foregroundColor: Colors.black,
           elevation: 0,
           minimumSize: const Size(double.infinity, 52),
           shape:
@@ -372,12 +383,16 @@ class AppTheme {
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: primary,
-        foregroundColor: Colors.white,
+        foregroundColor: Colors.black,
         elevation: 4,
         shape: CircleBorder(),
       ),
       dividerTheme:
           const DividerThemeData(color: lDivider, thickness: 1, space: 1),
+      listTileTheme: const ListTileThemeData(
+        tileColor: Colors.transparent,
+        iconColor: lOnSurfaceMuted,
+      ),
       chipTheme: ChipThemeData(
         backgroundColor: lCard2,
         selectedColor: primary.withOpacity(0.15),

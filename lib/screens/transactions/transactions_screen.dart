@@ -327,9 +327,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   }
 
   Future<void> _deleteTransaction(Transaction t) async {
-    await ref.read(accountsProvider.notifier).reverseTransaction(t);
-    await IsarService.instance.deleteTransaction(t.id);
-    ref.read(transactionsRefreshProvider.notifier).refresh();
+    await ref.read(transactionsRefreshProvider.notifier).deleteWithBalance(
+          transaction: t,
+          accounts: ref.read(accountsProvider.notifier),
+        );
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -352,11 +353,12 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 tags: List.from(t.tags),
                 isFavorite: t.isFavorite,
               );
-              await IsarService.instance.saveTransaction(restored);
               await ref
-                  .read(accountsProvider.notifier)
-                  .applyTransaction(restored);
-              ref.read(transactionsRefreshProvider.notifier).refresh();
+                  .read(transactionsRefreshProvider.notifier)
+                  .saveWithBalance(
+                    next: restored,
+                    accounts: ref.read(accountsProvider.notifier),
+                  );
             },
           ),
         ),

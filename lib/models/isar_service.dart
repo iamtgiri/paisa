@@ -65,6 +65,7 @@ class IsarService {
       ('Fuel', 0xFFFF6F00, 'e546'), // local_gas_station
       ('Cab / Auto', 0xFF039BE5, 'e558'), // local_taxi
       ('Work Meals', 0xFFFF7043, 'e25a'), // restaurant
+      ('Vehicle Maintenance', 0xFF37474F, 'e531'), // directions_car
 
       // Housing & Bills
       ('Rent', 0xFF5D4037, 'e88a'), // home
@@ -74,6 +75,8 @@ class IsarService {
       ('Internet', 0xFF00838F, 'e63e'), // wifi
       ('Mobile Recharge', 0xFF7B1FA2, 'e0cd'), // phone_android
       ('OTT / Streaming', 0xFFE91E63, 'e40b'), // movie
+      ('Society / Maintenance', 0xFF455A64, 'e88a'), // home
+      ('Home Repairs', 0xFF6D4C41, 'e88a'), // home
 
       // Finance & EMI
       ('Home Loan EMI', 0xFF3949AB, 'e88a'), // home
@@ -83,11 +86,16 @@ class IsarService {
       ('SIP / Mutual Fund', 0xFF00695C, 'e8dc'), // trending_up
       ('Stocks / Trading', 0xFF2E7D32, 'e8dc'), // trending_up
       ('Insurance Premium', 0xFF37474F, 'e1db'), // security / power icon
+      ('Gold / Digital Gold', 0xFFFFA000, 'e8dc'), // trending_up
+      ('PF / NPS / Pension', 0xFF004D40, 'e2d6'), // account_balance
+      ('Fixed / Recurring Deposit', 0xFF01579B, 'e2d6'), // account_balance
+      ('Emergency Fund', 0xFF2E7D32, 'e227'), // account_balance_wallet
 
       // Family & Health
       ('Family Support', 0xFFF06292, 'e87d'), // favorite / heart
       ('Child Education', 0xFF558B2F, 'e80c'), // school
       ('Child Care', 0xFFAD1457, 'e91d'), // child_care / pets
+      ('Domestic Help', 0xFF8D6E63, 'e91d'), // child_care / pets
       ('Medical', 0xFFD32F2F, 'e548'), // local_hospital
       ('Medicines', 0xFFE53935, 'e54f'), // medication / local_pharmacy
       ('Gym / Fitness', 0xFF00897B, 'ea26'), // fitness_center

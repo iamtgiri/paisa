@@ -12,6 +12,7 @@ import 'screens/dashboard/dashboard_screen.dart';
 import 'screens/lock/pin_lock_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'screens/transactions/transactions_screen.dart';
+import 'services/notification_capture_service.dart';
 import 'services/notification_service.dart';
 import 'theme/app_theme.dart';
 import 'utils/app_utils.dart';
@@ -64,11 +65,19 @@ class _AppShellState extends ConsumerState<_AppShell> {
     try {
       await AppPrefs.instance.init();
       await IsarService.instance.init();
+      await IsarService.instance.reseedMissingDefaults();
 
       if (!mounted) return;
 
       // ── Restore persisted state into providers ─────────────────
       final prefs = AppPrefs.instance;
+
+      try {
+        await NotificationCaptureService()
+            .setEnabled(prefs.notificationCaptureEnabled);
+      } catch (_) {
+        // Notification capture is optional and unavailable on non-Android builds.
+      }
 
       ref.read(spendingLimitProvider.notifier).state = prefs.spendingLimit;
       ref.read(themeModeProvider.notifier).state = prefs.themeMode;
@@ -91,6 +100,18 @@ class _AppShellState extends ConsumerState<_AppShell> {
 
       final transfers = transfersFromJson(prefs.transfersJson);
       ref.read(transfersProvider.notifier).load(transfers);
+
+      // ── Net worth history (daily snapshot) ─────────────────────
+      final netWorthNotifier = ref.read(netWorthHistoryProvider.notifier);
+      netWorthNotifier.load(netWorthHistoryFromJson(prefs.netWorthHistoryJson));
+      final totalBalance =
+          accounts.fold<double>(0.0, (sum, a) => sum + a.balance);
+      await netWorthNotifier.recordSnapshot(totalBalance);
+
+      // Restore pending notification transactions and ingest new local captures.
+      final pendingNotifier = ref.read(pendingTransactionsProvider.notifier);
+      await pendingNotifier.loadSaved();
+      await pendingNotifier.syncFromAndroid();
 
       // ── Notifications ──────────────────────────────────────────
       if (prefs.notificationsEnabled) {

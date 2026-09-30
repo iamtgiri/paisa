@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'dart:convert';
+
 import '../models/account.dart';
 import '../models/app_prefs.dart';
 import '../models/isar_service.dart';
@@ -8,6 +10,9 @@ import '../models/transaction.dart';
 import '../models/budget.dart';
 import '../models/savings_goal.dart';
 import '../models/recurring.dart';
+import '../models/pending_transaction.dart';
+import '../services/notification_capture_service.dart';
+import '../utils/transaction_sms_parser.dart';
 
 // ─── Selected Month ────────────────────────────────────────────
 class SelectedMonth {
@@ -65,6 +70,39 @@ final categoriesRefreshProvider =
 class TransactionsNotifier extends StateNotifier<int> {
   TransactionsNotifier() : super(0);
   void refresh() => state++;
+
+  Future<void> saveWithBalance({
+    Transaction? previous,
+    required Transaction next,
+    required AccountsNotifier accounts,
+  }) async {
+    await IsarService.instance.saveTransaction(next);
+    try {
+      await accounts.replaceTransaction(previous: previous, next: next);
+    } catch (_) {
+      if (previous == null) {
+        await IsarService.instance.deleteTransaction(next.id);
+      } else {
+        await IsarService.instance.saveTransaction(previous);
+      }
+      rethrow;
+    }
+    refresh();
+  }
+
+  Future<void> deleteWithBalance({
+    required Transaction transaction,
+    required AccountsNotifier accounts,
+  }) async {
+    await IsarService.instance.deleteTransaction(transaction.id);
+    try {
+      await accounts.reverseTransaction(transaction);
+    } catch (_) {
+      await IsarService.instance.saveTransaction(transaction);
+      rethrow;
+    }
+    refresh();
+  }
 }
 
 final transactionsRefreshProvider =
@@ -347,7 +385,7 @@ class AccountsNotifier extends StateNotifier<List<Account>> {
 
   Future<void> _applyBalanceDelta(String accountId, double delta) async {
     final account = accountById(accountId);
-    if (account == null || account.isCash) return;
+    if (account == null) return;
     await updateAccount(account.copyWith(balance: account.balance + delta));
   }
 
@@ -396,3 +434,125 @@ final transfersProvider =
 final notificationsEnabledProvider = StateProvider<bool>((ref) => true);
 
 final currencyRefreshProvider = StateProvider<int>((ref) => 0);
+
+// ─── Net worth history ───────────────────────────────────────────
+typedef NetWorthPoint = ({DateTime date, double balance});
+
+class NetWorthNotifier extends StateNotifier<List<NetWorthPoint>> {
+  NetWorthNotifier() : super([]);
+
+  void load(List<NetWorthPoint> history) => state = history;
+
+  /// Records today's total balance, replacing any existing entry for today.
+  /// Keeps at most the most recent 180 days locally.
+  Future<void> recordSnapshot(double balance) async {
+    final today = DateTime.now();
+    final todayKey = DateTime(today.year, today.month, today.day);
+    final withoutToday =
+        state.where((e) => !_isSameDay(e.date, todayKey)).toList();
+    final updated = [...withoutToday, (date: todayKey, balance: balance)]
+      ..sort((a, b) => a.date.compareTo(b.date));
+    final trimmed =
+        updated.length > 180 ? updated.sublist(updated.length - 180) : updated;
+    state = trimmed;
+    await AppPrefs.instance.setNetWorthHistoryJson(_encode(trimmed));
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  String _encode(List<NetWorthPoint> items) => json.encode(items
+      .map((e) => {'date': e.date.toIso8601String(), 'balance': e.balance})
+      .toList());
+}
+
+final netWorthHistoryProvider =
+    StateNotifierProvider<NetWorthNotifier, List<NetWorthPoint>>(
+        (ref) => NetWorthNotifier());
+
+List<NetWorthPoint> netWorthHistoryFromJson(String raw) {
+  try {
+    final list = json.decode(raw) as List;
+    return list
+        .map((e) => (
+              date: DateTime.parse(e['date'] as String),
+              balance: (e['balance'] as num).toDouble(),
+            ))
+        .toList();
+  } catch (_) {
+    return [];
+  }
+}
+
+// ─── Pending notification transactions ─────────────────────────
+class PendingTransactionsNotifier
+    extends StateNotifier<List<PendingTransaction>> {
+  PendingTransactionsNotifier() : super([]);
+
+  Future<void> loadSaved() async {
+    final raw = AppPrefs.instance.get<String>('pending_transactions') ?? '[]';
+    state = pendingTransactionsFromJson(raw);
+  }
+
+  Future<void> _persist() async {
+    await AppPrefs.instance.set(
+      'pending_transactions',
+      pendingTransactionsToJson(state),
+    );
+  }
+
+  Future<void> ingestCaptured(List<CapturedNotification> notifications) async {
+    final existingIds = state.map((item) => item.id).toSet();
+    final additions = <PendingTransaction>[];
+
+    for (final notification in notifications) {
+      final sourceId =
+          '${notification.packageName}_${notification.receivedAt.millisecondsSinceEpoch}';
+      if (existingIds.contains(sourceId)) continue;
+
+      final accountHint = notification.title.trim().isEmpty
+          ? notification.packageName
+          : notification.title.trim();
+      final parsed = TransactionSmsParser.parse(
+        notification.message,
+        accountName: accountHint,
+        now: notification.receivedAt,
+      );
+      if (parsed == null) continue;
+
+      additions.add(PendingTransaction.fromParsed(
+        parsed: parsed,
+        sourcePackage: notification.packageName,
+        accountHint: accountHint,
+        sourceId: sourceId,
+      ));
+    }
+
+    if (additions.isEmpty) return;
+    state = [...state, ...additions];
+    await _persist();
+  }
+
+  Future<void> syncFromAndroid() async {
+    try {
+      if (!AppPrefs.instance.notificationCaptureEnabled) return;
+      final captureService = NotificationCaptureService();
+      if (!await captureService.isAccessEnabled()) return;
+      final captured = await captureService.readCaptured();
+      await ingestCaptured(captured);
+      await captureService.clearCaptured();
+    } catch (_) {
+      // Notification capture is optional and unavailable on non-Android builds.
+    }
+  }
+
+  Future<void> remove(String id) async {
+    state = state.where((item) => item.id != id).toList();
+    await _persist();
+  }
+}
+
+final pendingTransactionsProvider = StateNotifierProvider<
+    PendingTransactionsNotifier, List<PendingTransaction>>(
+  (ref) => PendingTransactionsNotifier(),
+);

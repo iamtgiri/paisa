@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,8 +8,12 @@ import 'package:intl/intl.dart';
 import '../../models/transaction.dart';
 import '../../models/isar_service.dart';
 import '../../providers/providers.dart';
+import '../../models/budget.dart';
+import '../../models/recurring.dart';
+import '../../models/savings_goal.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/app_utils.dart';
+import '../../utils/financial_health.dart';
 import '../../widgets/shared_widgets.dart';
 
 class AnalyticsScreen extends ConsumerStatefulWidget {
@@ -376,8 +382,109 @@ class _TrendsTab extends ConsumerWidget {
           ),
           error: (_, __) => const SizedBox.shrink(),
         ),
+        const SizedBox(height: 16),
+        // Daily spending heatmap
+        dailyAsync.when(
+          data: (daily) => _buildHeatmap(context, daily, sm),
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+        ),
         const SizedBox(height: 80),
       ],
+    );
+  }
+
+  Widget _buildHeatmap(
+      BuildContext context, Map<int, double> daily, SelectedMonth sm) {
+    if (daily.isEmpty) return const SizedBox.shrink();
+
+    final daysInMonth = DateTime(sm.year, sm.month + 1, 0).day;
+    final firstWeekday = DateTime(sm.year, sm.month, 1).weekday; // 1=Mon
+    final leadingBlanks = firstWeekday - 1;
+    final maxValue = daily.values.isEmpty
+        ? 0.0
+        : daily.values.reduce((a, b) => a > b ? a : b);
+    const weekdayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Daily spending heatmap',
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: context.appColors.onSurface)),
+          const SizedBox(height: 12),
+          Row(
+            children: weekdayLabels
+                .map((label) => Expanded(
+                      child: Center(
+                        child: Text(label,
+                            style: TextStyle(
+                                fontSize: 10,
+                                color: context.appColors.onSurfaceMuted)),
+                      ),
+                    ))
+                .toList(),
+          ),
+          const SizedBox(height: 6),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: leadingBlanks + daysInMonth,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 7,
+              mainAxisSpacing: 4,
+              crossAxisSpacing: 4,
+            ),
+            itemBuilder: (context, index) {
+              if (index < leadingBlanks) return const SizedBox.shrink();
+              final day = index - leadingBlanks + 1;
+              final value = daily[day] ?? 0;
+              final intensity = maxValue > 0 ? (value / maxValue) : 0.0;
+              final color = value > 0
+                  ? AppTheme.primary
+                      .withOpacity((0.15 + intensity * 0.85).clamp(0.15, 1.0))
+                  : context.appColors.surfaceCard2;
+              return GestureDetector(
+                onTap: value > 0
+                    ? () => ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                'Day $day: ${AppUtils.formatAmount(value)}'),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        )
+                    : null,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$day',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: intensity > 0.5
+                            ? Colors.white
+                            : context.appColors.onSurfaceMuted,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -1515,11 +1622,66 @@ class _InsightsTab extends ConsumerWidget {
     final weekdayAsync = ref.watch(weekdayTotalsProvider);
     final statsAsync = ref.watch(allTimeStatsProvider);
     final summaryAsync = ref.watch(monthlySummaryProvider);
+    final trendAsync = ref.watch(monthlyTrendProvider);
+    final transactionsAsync = ref.watch(monthlyTransactionsProvider);
+    final dailyAsync = ref.watch(dailyTotalsProvider);
+    final categoryTotalsAsync = ref.watch(expenseCategoryTotalsProvider);
+    final budgetsAsync = ref.watch(monthlyBudgetsProvider);
+    final recurringAsync = ref.watch(recurringProvider);
+    final savingsGoalsAsync = ref.watch(savingsGoalsProvider);
+    final netWorthHistory = ref.watch(netWorthHistoryProvider);
+    final accounts = ref.watch(accountsProvider);
+    final totalBalance =
+        accounts.fold<double>(0.0, (sum, a) => sum + a.balance);
     final limit = ref.watch(spendingLimitProvider);
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        summaryAsync.when(
+          data: (summary) => trendAsync.when(
+            data: (trend) => _buildMetricGrid(
+                context, summary, trend, ref.watch(selectedMonthProvider)),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+        ),
+        transactionsAsync.when(
+          data: (transactions) => summaryAsync.when(
+            data: (summary) => trendAsync.when(
+              data: (trend) => _buildHealthCard(
+                context,
+                transactions,
+                summary.income,
+                limit,
+                ref.watch(selectedMonthProvider),
+                trend,
+              ),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+            ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+        ),
+        _buildDetailedInsights(
+          context,
+          transactionsAsync.valueOrNull,
+          categoryTotalsAsync.valueOrNull,
+          dailyAsync.valueOrNull,
+          budgetsAsync.valueOrNull,
+          recurringAsync.valueOrNull,
+          totalBalance,
+          statsAsync.valueOrNull?.avgMonthlySpend,
+        ),
+        _buildNetWorthChart(context, netWorthHistory),
+        _buildBudgetProgress(
+            context, budgetsAsync.valueOrNull, categoryTotalsAsync.valueOrNull),
+        _buildSavingsGoalsOverview(context, savingsGoalsAsync.valueOrNull),
         // Spending limit alert card (if set)
         summaryAsync.when(
           data: (s) => limit != null
@@ -1550,6 +1712,812 @@ class _InsightsTab extends ConsumerWidget {
         ),
         const SizedBox(height: 80),
       ],
+    );
+  }
+
+  Widget _buildMetricGrid(
+    BuildContext context,
+    ({double income, double expense, int count}) summary,
+    List<({int year, int month, double expense, double income})> trend,
+    SelectedMonth selectedMonth,
+  ) {
+    final net = summary.income - summary.expense;
+    final savingsRate = summary.income > 0 ? net / summary.income : 0.0;
+    final days = selectedMonth.isCurrentMonth
+        ? DateTime.now().day
+        : DateTime(selectedMonth.year, selectedMonth.month + 1, 0).day;
+    final dailyAverage = days > 0 ? summary.expense / days : 0.0;
+    final previousExpense =
+        trend.length > 1 ? trend[trend.length - 2].expense : null;
+    final change = previousExpense == null || previousExpense == 0
+        ? null
+        : (summary.expense - previousExpense) / previousExpense * 100;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        children: [
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _MetricTile(
+                    label: 'Net cash flow',
+                    value: AppUtils.formatAmount(net, compact: true),
+                    detail: net >= 0
+                        ? 'Positive this month'
+                        : 'Spending exceeds income',
+                    color: net >= 0 ? AppTheme.income : AppTheme.expense,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _MetricTile(
+                    label: 'Savings rate',
+                    value: '${(savingsRate * 100).toStringAsFixed(0)}%',
+                    detail: summary.income > 0
+                        ? 'Income kept'
+                        : 'Add income to measure',
+                    color: savingsRate >= 0.2 ? AppTheme.income : Colors.orange,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _MetricTile(
+                    label: 'Daily expense pace',
+                    value: AppUtils.formatAmount(dailyAverage, compact: true),
+                    detail: '${summary.count} transactions',
+                    color: AppTheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _MetricTile(
+                    label: 'Month change',
+                    value: change == null
+                        ? 'No baseline'
+                        : '${change.abs().toStringAsFixed(0)}%',
+                    detail: change == null
+                        ? 'Need previous spending'
+                        : change <= 0
+                            ? 'Lower than last month'
+                            : 'Higher than last month',
+                    color: change == null
+                        ? context.appColors.onSurfaceMuted
+                        : change <= 0
+                            ? AppTheme.income
+                            : AppTheme.expense,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHealthCard(
+    BuildContext context,
+    List<Transaction> transactions,
+    double income,
+    double? spendingLimit,
+    SelectedMonth selectedMonth,
+    List<({int year, int month, double expense, double income})> trend,
+  ) {
+    if (transactions.isEmpty) return const SizedBox.shrink();
+    final historicalMonthlyExpenses = trend.length > 1
+        ? trend.sublist(0, trend.length - 1).map((t) => t.expense).toList()
+        : const <double>[];
+    final health = FinancialHealthEngine.analyze(
+      transactions: transactions,
+      monthlyIncome: income,
+      spendingLimit: spendingLimit ?? 0,
+      month: DateTime(selectedMonth.year, selectedMonth.month),
+      historicalMonthlyExpenses: historicalMonthlyExpenses,
+    );
+    final scoreColor = health.score >= 60
+        ? AppTheme.income
+        : health.score >= 40
+            ? Colors.orange
+            : AppTheme.expense;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: scoreColor.withOpacity(0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text('Financial health',
+                    style: Theme.of(context).textTheme.titleMedium),
+              ),
+              IconButton(
+                onPressed: () => _showHealthInfoDialog(context),
+                icon: Icon(Icons.info_outline,
+                    size: 18, color: context.appColors.onSurfaceMuted),
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+              ),
+              Text('${health.score}/100',
+                  style: TextStyle(
+                      color: scoreColor, fontWeight: FontWeight.w800)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(health.status,
+              style: TextStyle(
+                  color: scoreColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          Text(health.tip,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  color: context.appColors.onSurfaceMuted, fontSize: 12)),
+          const SizedBox(height: 14),
+          _healthRatio(context, 'Needs', health.needsRatio, AppTheme.primary),
+          _healthRatio(context, 'Wants', health.wantsRatio, Colors.orange),
+          _healthRatio(
+              context, 'Savings', health.savingsRatio, AppTheme.income),
+          const SizedBox(height: 10),
+          Text(
+            'Projected month-end spending: ${AppUtils.formatAmount(health.projectedMonthEndExpense, compact: true)}',
+            style: TextStyle(
+                color: context.appColors.onSurfaceMuted, fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _healthRatio(
+      BuildContext context, String label, double ratio, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 58,
+            child: Text(label,
+                style: TextStyle(
+                    color: context.appColors.onSurfaceMuted, fontSize: 11)),
+          ),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: ratio.clamp(0.0, 1.0).toDouble(),
+                minHeight: 6,
+                backgroundColor: context.appColors.surfaceCard2,
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 36,
+            child: Text('${(ratio * 100).toStringAsFixed(0)}%',
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                    color: context.appColors.onSurfaceMuted, fontSize: 11)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showHealthInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('How financial health works'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('SCORE BANDS',
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                      letterSpacing: 0.8)),
+              const SizedBox(height: 6),
+              _infoLine('80\u2013100', 'Excellent', AppTheme.income),
+              _infoLine('60\u201379', 'Good', AppTheme.income),
+              _infoLine('40\u201359', 'Fair', Colors.orange),
+              _infoLine('0\u201339', 'Needs Attention', AppTheme.expense),
+              const SizedBox(height: 16),
+              Text('NEEDS (essential, fixed)',
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.primary,
+                      letterSpacing: 0.8)),
+              const SizedBox(height: 4),
+              const Text(
+                  'Rent, groceries, electricity, water, gas/cooking, fuel, '
+                  'cab/auto/commute, loan EMIs, credit card bills, medical & '
+                  'medicines, insurance, mobile/internet, child care, '
+                  'education, maintenance/repairs, domestic help.',
+                  style: TextStyle(fontSize: 12)),
+              const SizedBox(height: 12),
+              Text('SAVINGS (building wealth)',
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.income,
+                      letterSpacing: 0.8)),
+              const SizedBox(height: 4),
+              const Text(
+                  'SIP/mutual funds, stocks/trading, gold, PF/NPS/pension, '
+                  'fixed/recurring deposits, emergency fund, and any '
+                  'category or note containing "savings" or "investment".',
+                  style: TextStyle(fontSize: 12)),
+              const SizedBox(height: 12),
+              Text('WANTS (discretionary)',
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.orange,
+                      letterSpacing: 0.8)),
+              const SizedBox(height: 4),
+              const Text(
+                  'Everything else — dining out, shopping, entertainment, '
+                  'travel, subscriptions, gifts, and similar non-essential '
+                  'spending.',
+                  style: TextStyle(fontSize: 12)),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Got it')),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoLine(String range, String label, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          SizedBox(
+              width: 56,
+              child: Text(range,
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: color))),
+          Text(label, style: TextStyle(fontSize: 12, color: color)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailedInsights(
+    BuildContext context,
+    List<Transaction>? transactions,
+    Map<String, double>? categoryTotals,
+    Map<int, double>? dailyTotals,
+    List<Budget>? budgets,
+    List<RecurringTransaction>? recurring,
+    double totalBalance,
+    double? avgMonthlySpend,
+  ) {
+    if (transactions == null || transactions.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final expenseTxns = transactions.where((t) => t.isExpense).toList();
+    final avgTransaction = expenseTxns.isEmpty
+        ? null
+        : expenseTxns.fold<double>(0, (sum, t) => sum + t.amount) /
+            expenseTxns.length;
+
+    MapEntry<int, double>? highestDay;
+    for (final entry in (dailyTotals ?? const {}).entries) {
+      if (highestDay == null || entry.value > highestDay!.value) {
+        highestDay = entry;
+      }
+    }
+
+    MapEntry<String, double>? topCategory;
+    final totalExpense =
+        (categoryTotals ?? const {}).values.fold<double>(0, (a, b) => a + b);
+    for (final entry in (categoryTotals ?? const {}).entries) {
+      if (topCategory == null || entry.value > topCategory!.value) {
+        topCategory = entry;
+      }
+    }
+
+    double? budgetUtilization;
+    if (budgets != null && budgets.isNotEmpty) {
+      final totalLimit =
+          budgets.fold<double>(0, (sum, b) => sum + b.limitAmount);
+      if (totalLimit > 0) {
+        final totalSpent = budgets.fold<double>(
+            0, (sum, b) => sum + (categoryTotals?[b.categoryName] ?? 0));
+        budgetUtilization = totalSpent / totalLimit;
+      }
+    }
+
+    final now = DateTime.now();
+    final weekAhead = now.add(const Duration(days: 7));
+    final upcoming = (recurring ?? const [])
+        .where((r) =>
+            r.isActive &&
+            r.isExpense &&
+            r.nextDueDate.isAfter(now.subtract(const Duration(days: 1))) &&
+            r.nextDueDate.isBefore(weekAhead))
+        .toList();
+    final upcomingTotal = upcoming.fold<double>(0, (sum, r) => sum + r.amount);
+
+    final subscriptions = (recurring ?? const []).where((r) {
+      final name = r.categoryName.toLowerCase();
+      return r.isActive &&
+          (name.contains('subscription') ||
+              name.contains('ott') ||
+              name.contains('streaming'));
+    }).toList();
+    final subscriptionMonthly =
+        subscriptions.fold<double>(0, (sum, r) => sum + _monthlyEquivalent(r));
+
+    final dailyValues = (dailyTotals ?? const {}).values.toList();
+    String consistencyLabel = 'Not enough data';
+    if (dailyValues.length >= 3) {
+      final mean =
+          dailyValues.fold<double>(0, (a, b) => a + b) / dailyValues.length;
+      if (mean > 0) {
+        final variance = dailyValues.fold<double>(
+                0, (sum, v) => sum + (v - mean) * (v - mean)) /
+            dailyValues.length;
+        final coefficientOfVariation = math.sqrt(variance) / mean;
+        consistencyLabel = coefficientOfVariation < 0.4
+            ? 'Consistent'
+            : coefficientOfVariation < 0.8
+                ? 'Some variation'
+                : 'Irregular';
+      }
+    }
+
+    final emergencyMonths = (avgMonthlySpend != null && avgMonthlySpend > 0)
+        ? totalBalance / avgMonthlySpend
+        : null;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Detailed insights',
+              style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 10),
+          _insightRow(
+            context,
+            Icons.receipt_long_outlined,
+            'Average transaction size',
+            avgTransaction == null
+                ? 'No expenses yet'
+                : AppUtils.formatAmount(avgTransaction, compact: true),
+          ),
+          _insightRow(
+            context,
+            Icons.calendar_today_outlined,
+            'Highest spending day',
+            highestDay == null
+                ? 'No data yet'
+                : 'Day ${highestDay.key} · ${AppUtils.formatAmount(highestDay.value, compact: true)}',
+          ),
+          _insightRow(
+            context,
+            Icons.category_outlined,
+            'Highest spending category',
+            topCategory == null
+                ? 'No expenses yet'
+                : '${topCategory.key} · ${totalExpense > 0 ? (topCategory.value / totalExpense * 100).toStringAsFixed(0) : '0'}%',
+          ),
+          _insightRow(
+            context,
+            Icons.pie_chart_outline,
+            'Budget utilization',
+            budgetUtilization == null
+                ? 'No budgets set'
+                : '${(budgetUtilization * 100).toStringAsFixed(0)}% of limit used',
+            valueColor: budgetUtilization == null
+                ? null
+                : budgetUtilization >= 1.0
+                    ? AppTheme.expense
+                    : budgetUtilization >= 0.8
+                        ? Colors.orange
+                        : AppTheme.income,
+          ),
+          _insightRow(
+            context,
+            Icons.event_repeat_outlined,
+            'Upcoming recurring (7 days)',
+            upcoming.isEmpty
+                ? 'Nothing due soon'
+                : '${upcoming.length} due · ${AppUtils.formatAmount(upcomingTotal, compact: true)}',
+          ),
+          _insightRow(
+            context,
+            Icons.subscriptions_outlined,
+            'Subscriptions (est.)',
+            subscriptions.isEmpty
+                ? 'None tracked'
+                : '${AppUtils.formatAmount(subscriptionMonthly, compact: true)}/mo · ${AppUtils.formatAmount(subscriptionMonthly * 12, compact: true)}/yr',
+          ),
+          _insightRow(
+            context,
+            Icons.show_chart_rounded,
+            'Spending consistency',
+            consistencyLabel,
+          ),
+          _insightRow(
+            context,
+            Icons.health_and_safety_outlined,
+            'Emergency fund coverage',
+            emergencyMonths == null
+                ? 'Add income history to measure'
+                : '${emergencyMonths.toStringAsFixed(1)} months of expenses',
+            valueColor: emergencyMonths == null
+                ? null
+                : emergencyMonths >= 3
+                    ? AppTheme.income
+                    : emergencyMonths >= 1
+                        ? Colors.orange
+                        : AppTheme.expense,
+          ),
+        ],
+      ),
+    );
+  }
+
+  double _monthlyEquivalent(RecurringTransaction r) {
+    switch (r.frequency) {
+      case RecurringFrequency.daily:
+        return r.amount * 30;
+      case RecurringFrequency.weekly:
+        return r.amount * 4.345;
+      case RecurringFrequency.monthly:
+        return r.amount;
+      case RecurringFrequency.yearly:
+        return r.amount / 12;
+    }
+  }
+
+  Widget _insightRow(
+      BuildContext context, IconData icon, String label, String value,
+      {Color? valueColor}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 7),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: context.appColors.onSurfaceMuted),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(label,
+                style: TextStyle(
+                    fontSize: 12, color: context.appColors.onSurfaceMuted)),
+          ),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: valueColor ?? context.appColors.onSurface,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNetWorthChart(
+      BuildContext context, List<NetWorthPoint> history) {
+    if (history.length < 2) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: context.appColors.surfaceCard,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.trending_up_rounded,
+                size: 18, color: context.appColors.onSurfaceMuted),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Net worth trend builds up as you use Paisa on different days.',
+                style: TextStyle(
+                    fontSize: 12, color: context.appColors.onSurfaceMuted),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final maxValue =
+        history.map((e) => e.balance).reduce((a, b) => a > b ? a : b);
+    final minValue =
+        history.map((e) => e.balance).reduce((a, b) => a < b ? a : b);
+    final span = (maxValue - minValue).abs();
+    final maxY =
+        maxValue + (span > 0 ? span * 0.15 : (maxValue.abs() * 0.1 + 100));
+    final minY = minValue - (span > 0 ? span * 0.15 : 0);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Net worth trend',
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: context.appColors.onSurface)),
+          const SizedBox(height: 4),
+          Text(AppUtils.formatAmount(history.last.balance),
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: context.appColors.onSurface)),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 140,
+            child: LineChart(
+              LineChartData(
+                minX: 0,
+                maxX: (history.length - 1).toDouble(),
+                minY: minY,
+                maxY: maxY,
+                clipData: const FlClipData.all(),
+                gridData: const FlGridData(show: false),
+                borderData: FlBorderData(show: false),
+                titlesData: FlTitlesData(
+                  leftTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 22,
+                      interval: (history.length / 4)
+                          .ceilToDouble()
+                          .clamp(1, double.infinity),
+                      getTitlesWidget: (v, _) {
+                        final i = v.toInt();
+                        if (i < 0 || i >= history.length) {
+                          return const SizedBox.shrink();
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            DateFormat('d/M').format(history[i].date),
+                            style: TextStyle(
+                                fontSize: 9,
+                                color: context.appColors.onSurfaceMuted),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (_) => context.appColors.surfaceCard2,
+                    getTooltipItems: (spots) => spots
+                        .map((s) => LineTooltipItem(
+                              AppUtils.formatAmount(s.y, compact: true),
+                              const TextStyle(
+                                  color: AppTheme.primary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600),
+                            ))
+                        .toList(),
+                  ),
+                ),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: history
+                        .asMap()
+                        .entries
+                        .map((e) => FlSpot(e.key.toDouble(), e.value.balance))
+                        .toList(),
+                    isCurved: true,
+                    color: AppTheme.primary,
+                    barWidth: 3,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: AppTheme.primary.withOpacity(0.12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBudgetProgress(BuildContext context, List<Budget>? budgets,
+      Map<String, double>? categoryTotals) {
+    if (budgets == null || budgets.isEmpty) return const SizedBox.shrink();
+
+    final sorted = [...budgets]..sort((a, b) =>
+        ((categoryTotals?[b.categoryName] ?? 0) /
+                (b.limitAmount > 0 ? b.limitAmount : 1))
+            .compareTo((categoryTotals?[a.categoryName] ?? 0) /
+                (a.limitAmount > 0 ? a.limitAmount : 1)));
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Budget progress',
+              style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 10),
+          ...sorted.map((budget) {
+            final spent = categoryTotals?[budget.categoryName] ?? 0;
+            final pct = budget.limitAmount > 0
+                ? (spent / budget.limitAmount).clamp(0.0, 1.5)
+                : 0.0;
+            final color = pct >= 1.0
+                ? AppTheme.expense
+                : pct >= 0.8
+                    ? Colors.orange
+                    : AppTheme.income;
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(budget.categoryName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: context.appColors.onSurface)),
+                      ),
+                      Text(
+                        '${AppUtils.formatAmount(spent, compact: true)} / ${AppUtils.formatAmount(budget.limitAmount, compact: true)}',
+                        style: TextStyle(
+                            fontSize: 11,
+                            color: context.appColors.onSurfaceMuted),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: LinearProgressIndicator(
+                      value: pct.clamp(0.0, 1.0).toDouble(),
+                      minHeight: 6,
+                      backgroundColor: context.appColors.surfaceCard2,
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSavingsGoalsOverview(
+      BuildContext context, List<SavingsGoal>? goals) {
+    if (goals == null || goals.isEmpty) return const SizedBox.shrink();
+    final active = goals.where((g) => !g.isCompleted).toList();
+    if (active.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Savings goals progress',
+              style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 10),
+          ...active.take(5).map((goal) {
+            final color = AppUtils.colorFromValue(goal.colorValue);
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(goal.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: context.appColors.onSurface)),
+                      ),
+                      Text(
+                        '${(goal.progress * 100).toStringAsFixed(0)}%',
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: color),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: LinearProgressIndicator(
+                      value: goal.progress,
+                      minHeight: 6,
+                      backgroundColor: context.appColors.surfaceCard2,
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 
@@ -2074,13 +3042,20 @@ class _TopSpendsTab extends ConsumerWidget {
   }
 
   Color _rankColor(BuildContext context, int rank) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (rank) {
       case 1:
-        return const Color(0xFFFFD700); // gold
+        return isDark
+            ? const Color(0xFFFFD700)
+            : const Color(0xFFB8860B); // gold
       case 2:
-        return const Color(0xFFB0B0B0); // silver
+        return isDark
+            ? const Color(0xFFB0B0B0)
+            : const Color(0xFF757575); // silver
       case 3:
-        return Color(0xFFCD7F32); // bronze
+        return isDark
+            ? const Color(0xFFCD7F32)
+            : const Color(0xFF8B5A2B); // bronze
       default:
         return context.appColors.onSurfaceMuted;
     }
@@ -2102,6 +3077,62 @@ Color _analyticsChartColor(List<Color> palette, int index) {
           .clamp(0.25, 0.75)
           .toDouble())
       .toColor();
+}
+
+/// Picks black or white text for readability against a fill color of any
+/// brightness (some chart palette colors are pale pastels).
+Color _readableOnColor(Color background) {
+  return background.computeLuminance() > 0.55 ? Colors.black : Colors.white;
+}
+
+class _MetricTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final String detail;
+  final Color color;
+
+  const _MetricTile({
+    required this.label,
+    required this.value,
+    required this.detail,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      constraints: const BoxConstraints(minHeight: 92),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withOpacity(0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  color: context.appColors.onSurfaceMuted, fontSize: 10)),
+          const SizedBox(height: 5),
+          Text(value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  color: color, fontSize: 17, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 4),
+          Text(detail,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  color: context.appColors.onSurfaceMuted, fontSize: 10)),
+        ],
+      ),
+    );
+  }
 }
 
 class _PieChartCard extends StatelessWidget {
@@ -2172,10 +3203,11 @@ class _PieChartCard extends StatelessWidget {
                         : pct > 7
                             ? '${pct.toStringAsFixed(0)}%'
                             : '',
-                    titleStyle: const TextStyle(
+                    titleStyle: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white),
+                        color:
+                            _readableOnColor(_analyticsChartColor(colors, i))),
                   );
                 }).toList(),
                 centerSpaceRadius: 46,
@@ -2186,12 +3218,26 @@ class _PieChartCard extends StatelessWidget {
           // Touch hint
           if (touchedIndex >= 0 && touchedIndex < sorted.length) ...[
             const SizedBox(height: 8),
-            Text(
-              sorted[touchedIndex].key,
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: _analyticsChartColor(colors, touchedIndex)),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  margin: const EdgeInsets.only(right: 6),
+                  decoration: BoxDecoration(
+                    color: _analyticsChartColor(colors, touchedIndex),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                Text(
+                  sorted[touchedIndex].key,
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: context.appColors.onSurface),
+                ),
+              ],
             ),
             Text(
               AppUtils.formatAmount(sorted[touchedIndex].value),

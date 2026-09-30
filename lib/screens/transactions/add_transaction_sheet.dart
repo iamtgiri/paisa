@@ -150,13 +150,12 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       );
     }
 
-    await IsarService.instance.saveTransaction(txn);
-    await ref.read(accountsProvider.notifier).replaceTransaction(
+    await ref.read(transactionsRefreshProvider.notifier).saveWithBalance(
           previous: widget.existing,
           next: txn,
+          accounts: ref.read(accountsProvider.notifier),
         );
     HapticFeedback.lightImpact();
-    ref.read(transactionsRefreshProvider.notifier).refresh();
 
     if (mounted) {
       setState(() => _isSaving = false);
