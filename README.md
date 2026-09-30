@@ -90,7 +90,7 @@ Android is the primary supported and tested platform. This project has no other 
 ## Local Development
 
 ```powershell
-git clone https://github.com/<your-account>/paisa.git
+git clone https://github.com/iamtgiri/paisa.git
 cd paisa
 
 flutter pub get
