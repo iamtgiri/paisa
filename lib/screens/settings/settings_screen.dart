@@ -183,14 +183,14 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _section(context, 'DATA', [
             _tile(
-              context,
-              Icons.pending_actions_outlined,
-              'Pending Transactions',
-              pendingCount == 0
-                ? 'Review captured bank notifications'
-                : '$pendingCount notification${pendingCount == 1 ? '' : 's'} waiting for review',
-              const Color(0xFFFF9800),
-              () => _push(context, const PendingTransactionsScreen())),
+                context,
+                Icons.pending_actions_outlined,
+                'Pending Transactions',
+                pendingCount == 0
+                    ? 'Review captured bank notifications'
+                    : '$pendingCount notification${pendingCount == 1 ? '' : 's'} waiting for review',
+                const Color(0xFFFF9800),
+                () => _push(context, const PendingTransactionsScreen())),
             _tile(
                 context,
                 Icons.upload_outlined,
@@ -927,7 +927,8 @@ class SettingsScreen extends ConsumerWidget {
         final now = DateTime.now();
         final target = latestTransactionDate.isAfter(now)
             ? SelectedMonth(now.year, now.month)
-            : SelectedMonth(latestTransactionDate.year, latestTransactionDate.month);
+            : SelectedMonth(
+                latestTransactionDate.year, latestTransactionDate.month);
         ref.read(selectedMonthProvider.notifier).state = target;
       }
 
@@ -2134,7 +2135,9 @@ class RecurringScreen extends ConsumerWidget {
                       ? TransactionType.expense
                       : TransactionType.income,
                 );
-                await ref.read(transactionsRefreshProvider.notifier).saveWithBalance(
+                await ref
+                    .read(transactionsRefreshProvider.notifier)
+                    .saveWithBalance(
                       next: txn,
                       accounts: ref.read(accountsProvider.notifier),
                     );
@@ -2458,8 +2461,8 @@ class _RecurringFormSheetState extends ConsumerState<_RecurringFormSheet> {
               onTap: _pickNextDue,
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                 decoration: BoxDecoration(
                   color: context.appColors.surfaceCard2,
                   borderRadius: BorderRadius.circular(12),
