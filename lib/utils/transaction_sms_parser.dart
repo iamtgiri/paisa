@@ -35,7 +35,8 @@ class TransactionSmsParser {
   );
   static final _referencePattern = RegExp(
     r'\b(?:ref(?:erence)?(?:\s+no\.?)?|upi\s+ref\.?'
-    r'|transaction\s+(?:number|no\.?)\s*)[:.]?\s*([A-Za-z0-9-]+)',
+    r'|transaction\s+(?:number|no\.?))'
+    r'[\s.:]*(?:no\.?)?[\s.:]*([0-9][A-Za-z0-9-]*)',
     caseSensitive: false,
   );
 
@@ -90,11 +91,13 @@ class TransactionSmsParser {
   }
 
   static TransactionType? _transactionType(String lower) {
-    if (RegExp(r'\bcredited\b').hasMatch(lower)) {
-      return TransactionType.income;
-    }
+    // Checked before credit: a debit message may also mention the
+    // recipient being credited (e.g. "A/c debited ... AJAY KUMAR credited").
     if (RegExp(r'\b(?:debited|spent|sent|withdrawn)\b').hasMatch(lower)) {
       return TransactionType.expense;
+    }
+    if (RegExp(r'\bcredited\b').hasMatch(lower)) {
+      return TransactionType.income;
     }
     return null;
   }
