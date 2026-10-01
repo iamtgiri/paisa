@@ -19,7 +19,7 @@ dependencies:
   path_provider: ^2.1.4
 
   # Charts
-  fl_chart: ^0.68.0
+  fl_chart: ^1.2.0
 
   # UI / Fonts
   google_fonts: ^6.2.1
